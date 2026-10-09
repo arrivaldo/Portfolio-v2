@@ -237,7 +237,7 @@ const photos = { sam: '/people/sam.webp', madhu: '/people/madhu.webp', darwin: '
 
 const en: Content = {
   meta: {
-    title: 'Erick Rodríguez Bárcena — Software Engineer',
+    title: 'Erick Rodríguez Bárcena — Software & Automation Engineer',
     description: 'Mechatronic Engineer with 9+ years delivering software, automation and AI solutions across 22+ international projects.',
   },
   profile: {
@@ -472,7 +472,7 @@ const en: Content = {
 
 const es: Content = {
   meta: {
-    title: 'Erick Rodríguez Bárcena — Software Engineer',
+    title: 'Erick Rodríguez Bárcena — Software & Automation Engineer',
     description: 'Ingeniero Mecatrónico con más de 9 años entregando soluciones de software, automatización e IA en más de 22 proyectos internacionales.',
   },
   profile: {
