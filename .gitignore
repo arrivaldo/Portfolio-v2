@@ -1,0 +1,12 @@
+node_modules
+dist
+*.tsbuildinfo
+
+# Secrets (GEMINI_API_KEY)
+.env
+.env.*.local
+.env.local
+
+# Playwright
+test-results
+playwright-report

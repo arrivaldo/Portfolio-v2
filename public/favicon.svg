@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44 44">
+  <!-- Same "E/" mark as the navbar logo, on a solid disc so it reads on light and dark tab bars. -->
+  <defs>
+    <linearGradient id="g" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7ef0ff" />
+      <stop offset="50%" stop-color="#c86cff" />
+      <stop offset="100%" stop-color="#ff7ac8" />
+    </linearGradient>
+  </defs>
+  <circle cx="22" cy="22" r="22" fill="#0d0d0d" />
+  <circle cx="22" cy="22" r="20.75" fill="none" stroke="#f2f2f2" stroke-opacity=".35" stroke-width="1.5" />
+  <path d="M11 12h12v4h-8v4h7v4h-7v4h8v4H11z" fill="#f2f2f2" />
+  <path d="M25.5 32l6-20h4l-6 20z" fill="url(#g)" />
+</svg>

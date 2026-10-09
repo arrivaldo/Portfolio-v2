@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <script>
+      try {
+        var t = localStorage.getItem("theme");
+        if (t !== "dark" && t !== "light") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+        document.documentElement.dataset.theme = t;
+        document.documentElement.classList.add("is-loading");
+        // Same rule as i18n.tsx (saved choice, else browser language), applied before React loads.
+        var l = localStorage.getItem("lang");
+        if (l !== "en" && l !== "es") l = navigator.language.toLowerCase().indexOf("es") === 0 ? "es" : "en";
+        document.documentElement.lang = l;
+      } catch (e) {}
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Erick Rodríguez Bárcena — Software Engineer</title>
+    <meta name="description" content="Mechatronic Engineer with 9+ years delivering software, automation and AI solutions across 22+ international projects." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#0d0d0d" />
+    <link rel="canonical" href="https://engineerick-portfolio.vercel.app/" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Erick Rodríguez Bárcena",
+        "url": "https://engineerick-portfolio.vercel.app/",
+        "image": "https://engineerick-portfolio.vercel.app/profile.webp",
+        "jobTitle": "Automation Engineer",
+        "worksFor": { "@type": "Organization", "name": "Casa Médica" },
+        "address": { "@type": "PostalAddress", "addressCountry": "MX" },
+        "knowsAbout": ["Software Engineering", "Test Automation", "Quality Assurance", "AI Agents", "Workflow Automation", "Playwright", "TypeScript", "React", "Node.js"],
+        "sameAs": ["https://github.com/arrivaldo", "https://www.linkedin.com/in/erickbarcena7/"]
+      }
+    </script>
+    <!-- Link previews (LinkedIn, WhatsApp, X, Slack). Crawlers need absolute URLs: update them if the domain changes. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_MX" />
+    <meta property="og:url" content="https://engineerick-portfolio.vercel.app/" />
+    <meta property="og:title" content="Erick Rodríguez Bárcena — Software Engineer" />
+    <meta property="og:description" content="Mechatronic Engineer with 9+ years delivering software, automation and AI solutions across 22+ international projects." />
+    <meta property="og:image" content="https://engineerick-portfolio.vercel.app/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Erick Rodríguez Bárcena — Software, Automation, Quality and Solutions Engineer" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://engineerick-portfolio.vercel.app/og.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@1,600&family=Fira+Code:wght@300..700&family=Open+Sans:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,99 @@
+/* =========================================================
+   Preloader (Preloader.tsx): a CI run of the three roles; the E/ ring fills with real loading,
+   then the mark flies into the header logo while the panel lifts away.
+   ========================================================= */
+.boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  pointer-events: none;
+}
+.boot__panel {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(40% 35% at 50% 42%, color-mix(in srgb, #c86cff 10%, transparent), transparent 70%),
+    var(--frame);
+  clip-path: inset(0 0 0 0);
+  pointer-events: auto;
+}
+.boot__center {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 36px;
+  width: min(320px, calc(100vw - 48px));
+}
+
+/* Mark: same artwork as the header logo, ring as the progress gauge. */
+.boot__mark { width: 112px; height: 112px; will-change: transform; }
+.boot__mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.boot__track { fill: none; stroke: var(--line); stroke-width: 1.5; }
+.boot__ring { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
+.boot__mark-e { fill: currentColor; }
+
+/* Log: one line per stage, like a pipeline run. */
+.boot__log {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.boot__log li {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  opacity: 0.45;
+  transition: opacity 0.3s, color 0.3s;
+}
+.boot__log li.is-running,
+.boot__log li.is-done { opacity: 1; }
+.boot__log li.is-running { color: var(--text); }
+.boot__status {
+  display: grid;
+  place-items: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  font-size: 10px;
+  line-height: 1;
+}
+.boot__log li.is-running .boot__status {
+  border-color: var(--line);
+  border-top-color: #c86cff;
+  animation: boot-spin 0.7s linear infinite;
+}
+.boot__log li.is-done .boot__status {
+  border-color: transparent;
+  background: color-mix(in srgb, #3ddc84 18%, transparent);
+  color: #3ddc84;
+}
+@keyframes boot-spin { to { transform: rotate(360deg); } }
+
+/* Meter: thin iridescent bar + zero-padded percentage. */
+.boot__meter {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.boot__bar { position: relative; height: 2px; overflow: hidden; border-radius: 2px; background: var(--line); }
+.boot__bar span {
+  position: absolute;
+  inset: 0;
+  background: var(--iris);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
