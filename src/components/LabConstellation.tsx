@@ -164,13 +164,13 @@ function ConstellationSvg({ w: W, h: H, hubs, stars, active, take, twoLine: narr
       <svg className="lab-cosmos__edges" viewBox={box} aria-hidden="true">
         <defs>
           <linearGradient id="lab-cosmos-iri" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={W} y2={H}>
-            <stop offset="0" stopColor="#7ef0ff" />
-            <stop offset="0.5" stopColor="#c86cff" />
-            <stop offset="1" stopColor="#ff7ac8" />
+            <stop offset="0" stopColor="#5ce1ff" />
+            <stop offset="0.5" stopColor="#1f7aff" />
+            <stop offset="1" stopColor="#2d4bff" />
           </linearGradient>
           <radialGradient id="lab-cosmos-glow">
-            <stop offset="0" stopColor="#c86cff" stopOpacity="0.35" />
-            <stop offset="1" stopColor="#c86cff" stopOpacity="0" />
+            <stop offset="0" stopColor="#1f7aff" stopOpacity="0.35" />
+            <stop offset="1" stopColor="#1f7aff" stopOpacity="0" />
           </radialGradient>
         </defs>
         <EdgeLines hubs={hubs} stars={stars} />

@@ -1354,7 +1354,7 @@ section > .section-head + * { margin-top: 0; }
   border-radius: 24px;
   overflow: hidden;
   background:
-    radial-gradient(ellipse 60% 50% at 50% 50%, color-mix(in srgb, #c86cff 9%, transparent), transparent 70%),
+    radial-gradient(ellipse 60% 50% at 50% 50%, color-mix(in srgb, #1f7aff 14%, transparent), transparent 70%),
     var(--frame);
 }
 .lab-cosmos__map { display: block; width: 100%; height: auto; }
