@@ -50,3 +50,11 @@
 @media (max-width: 860px) {
   .lab-cosmos__info { height: 132px; align-content: start; }
 }
+
+/* Radial layout: edges are curves (paths), roles are pills on the inner orbit. */
+.lab-cosmos__edge { fill: none; }
+.lab-cosmos__orbit { fill: none; stroke: var(--text); stroke-opacity: 0.07; stroke-width: 1; stroke-dasharray: 2 6; }
+.lab-cosmos__hub .lab-cosmos__core { fill: var(--frame); stroke: url(#lab-cosmos-iri); stroke-width: 1.5; }
+.lab-cosmos__hub.is-focus .lab-cosmos__core { fill: #1f7aff; stroke: #5ce1ff; }
+.lab-cosmos__hub.is-focus text { fill: #fff; }
+.lab-cosmos__star.is-shared text { fill: var(--text); font-weight: 600; }

@@ -39,9 +39,11 @@ function seeded(seed: number) {
 
 const PER_ROLE = 8
 
-// Wide ellipse on desktop; on phones the same map stands upright so labels stay readable.
-const WIDE = { w: 800, h: 540, rx: 300, ry: 200, gap: 64 }
-const TALL = { w: 380, h: 640, rx: 120, ry: 265, gap: 46 }
+// Two concentric ellipses: roles on the inner orbit, each role's own tools fanned out on the outer one
+// (staggered between two radii so neighbouring labels never touch). Shared tools sit in the core.
+// Wide on desktop; on phones the same map stands upright so labels stay readable.
+const WIDE = { w: 880, h: 600, hub: [190, 128], out: [300, 208], stagger: 34, tiers: 2, core: 0.42 }
+const TALL = { w: 400, h: 760, hub: [96, 200], out: [140, 286], stagger: 24, tiers: 3, core: 0.26 }
 type Dims = typeof WIDE
 
 function useMedia(query: string) {
@@ -55,72 +57,79 @@ function useMedia(query: string) {
   return match
 }
 
-type Star = { id: string; x: number; y: number; hubs: number[] }
+/** `a` is the outward direction (radians), used to place the label away from the centre. */
+type Star = { id: string; x: number; y: number; a: number; hubs: number[] }
 type Active = { kind: 'skill'; id: string } | { kind: 'role'; i: number } | null
 type Dust = { x: number; y: number; r: number }
 
-function useConstellation(stacks: string[][], { w: W, h: H, rx, ry, gap }: Dims) {
+function useConstellation(stacks: string[][], { w: W, h: H, hub, out, stagger, tiers, core }: Dims) {
   return useMemo(() => {
     const cx = W / 2
     const cy = H / 2
-    const hubs = stacks.map((_, i) => {
-      const a = (-90 + i * (360 / stacks.length)) * (Math.PI / 180)
-      return { x: cx + Math.cos(a) * rx, y: cy + Math.sin(a) * ry }
-    })
+    const on = ([rx, ry]: number[], a: number, grow = 0) => ({ x: cx + Math.cos(a) * (rx + grow), y: cy + Math.sin(a) * (ry + grow) })
+
     const owners = new Map<string, number[]>()
     stacks.forEach((stack, i) => stack.slice(0, PER_ROLE).forEach((s) => owners.set(s, [...(owners.get(s) ?? []), i])))
+    const groups = stacks.map((_, i) => [...owners].filter(([, hs]) => hs.length === 1 && hs[0] === i).map(([id]) => id))
 
-    const rand = seeded(7)
-    const stars: Star[] = [...owners].map(([id, hs]) => {
-      const bx = hs.reduce((a, h) => a + hubs[h].x, 0) / hs.length
-      const by = hs.reduce((a, h) => a + hubs[h].y, 0) / hs.length
-      const pull = hs.length === 1 ? 0.6 : 0.42
-      const a = rand() * Math.PI * 2
-      const r = hs.length === 1 ? 30 + rand() * 50 : 10
-      return { id, hubs: hs, x: cx + (bx - cx) * pull + Math.cos(a) * r, y: cy + (by - cy) * pull + Math.sin(a) * r }
-    })
+    // Roles form an even hexagon (first one straight up); each fans its own tools out around its angle.
+    const sector = (Math.PI * 2) / stacks.length
+    const hubAngles = stacks.map((_, i) => -Math.PI / 2 + i * sector)
+    const hubs = hubAngles.map((a) => on(hub, a))
+    const step = (sector * 0.86) / Math.max(...groups.map((g) => g.length))
 
-    // Relax: push stars apart from each other and from the hubs so labels never pile up.
-    for (let k = 0; k < 160; k++) {
-      for (let i = 0; i < stars.length; i++) {
-        const s = stars[i]
-        for (let j = i + 1; j < stars.length; j++) {
-          const o = stars[j]
-          const dx = o.x - s.x
-          const dy = (o.y - s.y) * 1.6
+    const stars: Star[] = groups.flatMap((g, i) =>
+      g.map((id, k) => {
+        const a = hubAngles[i] + (k - (g.length - 1) / 2) * step
+        // Stagger (2 rows, 3 on phones) only near the top and bottom, where labels sit side by side; on the flanks they stack.
+        const grow = Math.abs(Math.cos(a)) < 0.45 ? (k % tiers) * stagger : 0
+        return { id, hubs: [i], a, ...on(out, a, grow) }
+      }),
+    )
+
+    // Shared tools live in the core, pulled toward the roles they connect, then nudged apart.
+    const shared: Star[] = [...owners]
+      .filter(([, hs]) => hs.length > 1)
+      .map(([id, hs]) => {
+        const x = hs.reduce((n, h) => n + hubs[h].x, 0) / hs.length
+        const y = hs.reduce((n, h) => n + hubs[h].y, 0) / hs.length
+        return { id, hubs: hs, a: Math.atan2(y - cy, x - cx), x: cx + (x - cx) * core, y: cy + (y - cy) * core }
+      })
+    for (let k = 0; k < 60; k++)
+      for (const s of shared)
+        for (const o of shared) {
+          if (s === o) continue
+          const dx = (o.x - s.x) / 2.4
+          const dy = o.y - s.y
           const d = Math.hypot(dx, dy) || 1
-          if (d < gap) {
-            const f = (gap - d) / d / 4
-            s.x -= dx * f
-            s.y -= (dy / 1.6) * f
-            o.x += dx * f
-            o.y += (dy / 1.6) * f
+          if (d < 30) {
+            s.x -= (dx / d) * 1.2
+            s.y -= (dy / d) * 0.5
           }
         }
-        // Hub labels are wide, so their keep-out zone is a flat ellipse.
-        for (const h of hubs) {
-          const dx = (s.x - h.x) / 2
-          const dy = s.y - h.y
-          const d = Math.hypot(dx, dy) || 1
-          if (d < 60) {
-            s.x += (dx / d) * (60 - d) * 0.6
-            s.y += (dy / d) * (60 - d) * 0.3
-          }
-        }
-        s.x = Math.min(W - 40, Math.max(40, s.x))
-        s.y = Math.min(H - 30, Math.max(30, s.y))
-      }
-    }
 
     // Rounded once here so every frame draws on whole-ish coordinates (crisper, no shimmer).
-    for (const s of stars) {
-      s.x = Math.round(s.x)
-      s.y = Math.round(s.y)
-    }
+    const all = [...stars, ...shared].map((s) => ({ ...s, x: Math.round(s.x), y: Math.round(s.y) }))
 
+    const rand = seeded(7)
     const dust: Dust[] = Array.from({ length: 70 }, () => ({ x: rand() * W, y: rand() * H, r: 0.4 + rand() * 1.1 }))
-    return { hubs, stars, dust }
-  }, [stacks, W, H, rx, ry, gap])
+    return { hubs, stars: all, dust, cx, cy }
+  }, [stacks, W, H, hub, out, stagger, tiers, core])
+}
+
+/** Hub → tool as a gentle curve bowed toward the core, so the lines read as one bundle instead of a mesh. */
+function edgePath(h: Pt, s: Pt, cx: number, cy: number) {
+  const mx = (h.x + s.x) / 2
+  const my = (h.y + s.y) / 2
+  return `M${h.x} ${h.y}Q${mx + (cx - mx) * 0.22} ${my + (cy - my) * 0.22} ${s.x} ${s.y}`
+}
+
+/** Label sits on the far side of the dot from the centre (above at the top, beside on the flanks…). */
+function labelAt(a: number, narrow: boolean) {
+  const c = Math.cos(a)
+  const s = Math.sin(a)
+  if (narrow || Math.abs(c) < 0.45) return { x: 0, y: s < 0 ? -9 : 15, anchor: 'middle' as const }
+  return { x: c > 0 ? 8 : -8, y: 3.5 + s * 6, anchor: c > 0 ? ('start' as const) : ('end' as const) }
 }
 
 /** Sky dust in three static sheets of different brightness. */
@@ -140,18 +149,25 @@ const DustSheets = memo(function DustSheets({ w: W, h: H, dust }: { w: number; h
 })
 
 /** Every edge, drawn once. Never re-renders when the active role or skill changes. */
-const EdgeLines = memo(function EdgeLines({ hubs, stars }: { hubs: Pt[]; stars: Star[] }) {
+const EdgeLines = memo(function EdgeLines({ hubs, stars, dims, cx, cy }: { hubs: Pt[]; stars: Star[]; dims: Dims; cx: number; cy: number }) {
   return (
     <g>
-      {stars.flatMap((s) => s.hubs.map((h) => <line key={`${s.id}-${h}`} className="lab-cosmos__edge" x1={hubs[h].x} y1={hubs[h].y} x2={s.x} y2={s.y} />))}
+      {/* Faint orbit guides give the map its structure. */}
+      <ellipse className="lab-cosmos__orbit" cx={cx} cy={cy} rx={dims.hub[0]} ry={dims.hub[1]} />
+      <ellipse className="lab-cosmos__orbit" cx={cx} cy={cy} rx={dims.out[0] + dims.stagger / 2} ry={dims.out[1] + dims.stagger / 2} />
+      {stars.flatMap((s) => s.hubs.map((h) => <path key={`${s.id}-${h}`} className="lab-cosmos__edge" d={edgePath(hubs[h], s, cx, cy)} />))}
     </g>
   )
 })
 
-type SvgProps = { w: number; h: number; hubs: Pt[]; stars: Star[]; active: Active; take: (a: Active) => void; twoLine: boolean; title: string }
+type SvgProps = { dims: Dims; hubs: Pt[]; stars: Star[]; cx: number; cy: number; active: Active; take: (a: Active) => void; twoLine: boolean; title: string }
+
+/** Role pill width from its longest line (Fira Code advances ~0.6em per glyph). */
+const pillWidth = (lines: string[], size: number) => Math.max(...lines.map((l) => l.length)) * size * 0.6 + 26
 
 /** The constellation drawing: an edges sheet underneath, stars and hubs on top. */
-function ConstellationSvg({ w: W, h: H, hubs, stars, active, take, twoLine: narrow, title }: SvgProps) {
+function ConstellationSvg({ dims, hubs, stars, cx, cy, active, take, twoLine: narrow, title }: SvgProps) {
+  const { w: W, h: H } = dims
   const { t } = useLang()
   const litStar = (s: Star) => !active || (active.kind === 'skill' ? active.id === s.id : s.hubs.includes(active.i))
   const litHub = (i: number) => !active || (active.kind === 'role' ? active.i === i : stars.find((s) => s.id === active.id)!.hubs.includes(i))
@@ -173,7 +189,7 @@ function ConstellationSvg({ w: W, h: H, hubs, stars, active, take, twoLine: narr
             <stop offset="1" stopColor="#1f7aff" stopOpacity="0" />
           </radialGradient>
         </defs>
-        <EdgeLines hubs={hubs} stars={stars} />
+        <EdgeLines hubs={hubs} stars={stars} dims={dims} cx={cx} cy={cy} />
       </svg>
 
       {/* Only the lit edges animate (a one-shot draw-in), in a sheet of their own. */}
@@ -183,61 +199,63 @@ function ConstellationSvg({ w: W, h: H, hubs, stars, active, take, twoLine: narr
             .filter((h) => litEdge(s, h))
             .map((h) => (
               // Keyed by the active target so the lines remount (and draw in again) on every change.
-              <line
-                key={`${activeKey}-${s.id}-${h}`}
-                className="lab-cosmos__edge is-lit"
-                pathLength={1}
-                x1={hubs[h].x}
-                y1={hubs[h].y}
-                x2={s.x}
-                y2={s.y}
-              />
+              <path key={`${activeKey}-${s.id}-${h}`} className="lab-cosmos__edge is-lit" pathLength={1} d={edgePath(hubs[h], s, cx, cy)} />
             )),
         )}
       </svg>
 
       <svg className={`lab-cosmos__map${active ? ' has-active' : ''}`} viewBox={box} role="img" aria-label={title}>
-        {stars.map((s) => (
-          <g
-            key={s.id}
-            className={`lab-cosmos__star${litStar(s) ? ' is-lit' : ''}${active?.kind === 'skill' && active.id === s.id ? ' is-focus' : ''}`}
-            transform={`translate(${s.x} ${s.y})`}
-            tabIndex={0}
-            onPointerEnter={() => take({ kind: 'skill', id: s.id })}
-            onFocus={() => take({ kind: 'skill', id: s.id })}
-            onClick={() => take({ kind: 'skill', id: s.id })}
-          >
-            <circle className="lab-cosmos__hit" r="16" />
-            <circle className="lab-cosmos__dot" r={s.hubs.length > 1 ? 4 : 2.6} />
-            <text dy="-9" textAnchor="middle">
-              {s.id}
-            </text>
-          </g>
-        ))}
+        {stars.map((s) => {
+          const shared = s.hubs.length > 1
+          const label = labelAt(s.a, narrow || shared)
+          return (
+            <g
+              key={s.id}
+              className={`lab-cosmos__star${shared ? ' is-shared' : ''}${litStar(s) ? ' is-lit' : ''}${active?.kind === 'skill' && active.id === s.id ? ' is-focus' : ''}`}
+              transform={`translate(${s.x} ${s.y})`}
+              tabIndex={0}
+              onPointerEnter={() => take({ kind: 'skill', id: s.id })}
+              onFocus={() => take({ kind: 'skill', id: s.id })}
+              onClick={() => take({ kind: 'skill', id: s.id })}
+            >
+              <circle className="lab-cosmos__hit" r="16" />
+              <circle className="lab-cosmos__dot" r={shared ? 4.5 : 2.8} />
+              <text x={label.x} y={label.y} textAnchor={label.anchor}>
+                {s.id}
+              </text>
+            </g>
+          )
+        })}
 
-        {hubs.map((h, i) => (
-          <g
-            key={i}
-            className={`lab-cosmos__hub${litHub(i) ? ' is-lit' : ''}${active?.kind === 'role' && active.i === i ? ' is-focus' : ''}`}
-            transform={`translate(${h.x} ${h.y})`}
-            tabIndex={0}
-            onPointerEnter={() => take({ kind: 'role', i })}
-            onFocus={() => take({ kind: 'role', i })}
-            onClick={() => take({ kind: 'role', i })}
-          >
-            <circle className="lab-cosmos__halo" r="46" fill="url(#lab-cosmos-glow)" />
-            <circle className="lab-cosmos__core" r="7" />
-            <text dy={narrow ? 0 : 26} textAnchor="middle">
-              {narrow
-                ? t.roles[i].title.split(' ').map((word, k) => (
-                    <tspan key={k} x="0" dy={k ? 14 : 26}>
-                      {word}
-                    </tspan>
-                  ))
-                : t.roles[i].title}
-            </text>
-          </g>
-        ))}
+        {hubs.map((h, i) => {
+          // On phones the pill breaks after the first word ("Senior / Product Engineer").
+          const title = t.roles[i].title
+          const lines = narrow && title.includes(' ') ? [title.slice(0, title.indexOf(' ')), title.slice(title.indexOf(' ') + 1)] : [title]
+          const size = narrow ? 10.5 : 12
+          const pw = pillWidth(lines, size)
+          const ph = lines.length * (size + 4) + 12
+          return (
+            <g
+              key={i}
+              className={`lab-cosmos__hub${litHub(i) ? ' is-lit' : ''}${active?.kind === 'role' && active.i === i ? ' is-focus' : ''}`}
+              transform={`translate(${h.x} ${h.y})`}
+              tabIndex={0}
+              onPointerEnter={() => take({ kind: 'role', i })}
+              onFocus={() => take({ kind: 'role', i })}
+              onClick={() => take({ kind: 'role', i })}
+            >
+              <ellipse className="lab-cosmos__halo" rx={pw * 0.75} ry={ph * 1.6} fill="url(#lab-cosmos-glow)" />
+              <rect className="lab-cosmos__core" x={-pw / 2} y={-ph / 2} width={pw} height={ph} rx={ph / 2} />
+              <text textAnchor="middle" style={{ fontSize: size }}>
+                {lines.map((line, k) => (
+                  <tspan key={k} x="0" y={(k - (lines.length - 1) / 2) * (size + 4) + size * 0.36}>
+                    {line}
+                  </tspan>
+                ))}
+              </text>
+            </g>
+          )
+        })}
       </svg>
     </>
   )
@@ -284,7 +302,7 @@ function Constellation() {
   const finePointer = useMedia('(hover: hover) and (pointer: fine)')
   const dims = narrow ? TALL : WIDE
   const { w: W, h: H } = dims
-  const { hubs, stars, dust } = useConstellation(stacks, dims)
+  const { hubs, stars, dust, cx, cy } = useConstellation(stacks, dims)
   const [active, setActive] = useState<Active>(null)
   const [touched, setTouched] = useState(false)
   const [ref, view] = useInView<HTMLDivElement>(0.35)
@@ -347,7 +365,7 @@ function Constellation() {
           <DustSheets w={W} h={H} dust={dust} />
         </div>
         <div className="lab-cosmos__plane" ref={front}>
-          <ConstellationSvg w={W} h={H} hubs={hubs} stars={stars} active={active} take={take} twoLine={narrow} title={c.title} />
+          <ConstellationSvg dims={dims} cx={cx} cy={cy} hubs={hubs} stars={stars} active={active} take={take} twoLine={narrow} title={c.title} />
         </div>
       </div>
 
