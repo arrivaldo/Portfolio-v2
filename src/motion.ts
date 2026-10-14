@@ -1,7 +1,8 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { blockIn, charsIn, mediaIn } from './anim'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -11,6 +12,28 @@ export const prefersReducedMotion = () => matchMedia('(prefers-reduced-motion: r
 export const hasFinePointer = () => matchMedia('(hover: hover) and (pointer: fine)').matches
 
 let lenis: Lenis | null = null
+
+/**
+ * Scroll reveals wait for the intro: anything already on screen at load would otherwise play under the
+ * preloader. Queued reveals start a beat after the hero entrance begins.
+ */
+let introDone = false
+const afterIntro: (() => void)[] = []
+export function onIntro(fn: () => void) {
+  if (introDone) fn()
+  else afterIntro.push(fn)
+}
+function markIntro() {
+  if (introDone) return
+  introDone = true
+  afterIntro.splice(0).forEach((fn, i) => gsap.delayedCall(0.5 + i * 0.08, fn))
+}
+
+/** Play a paused timeline once its trigger scrolls into view (and the intro is over). */
+export function revealOnScroll(trigger: Element, tl: gsap.core.Timeline | gsap.core.Tween, start = 'top 88%') {
+  tl.pause()
+  return ScrollTrigger.create({ trigger, start, once: true, onEnter: () => onIntro(() => tl.play()) })
+}
 
 export function scrollToTarget(target: string | number) {
   if (lenis) {
@@ -29,6 +52,50 @@ export function pauseScroll() {
 export function resumeScroll() {
   document.documentElement.style.overflow = ''
   lenis?.start()
+}
+
+/**
+ * Whether the page is scrolling right now (true from the first scroll event until ~150 ms after the last).
+ * The 3D scenes skip their frames meanwhile, so the scroll gets the whole frame budget.
+ */
+let lastScroll = -Infinity
+const scrollWatchers = new Set<(scrolling: boolean) => void>()
+let settleTimer = 0
+if (typeof window !== 'undefined')
+  window.addEventListener(
+    'scroll',
+    () => {
+      if (performance.now() - lastScroll > 150) scrollWatchers.forEach((fn) => fn(true))
+      lastScroll = performance.now()
+      clearTimeout(settleTimer)
+      settleTimer = window.setTimeout(() => scrollWatchers.forEach((fn) => fn(false)), 150)
+    },
+    { passive: true },
+  )
+export const isScrolling = () => performance.now() - lastScroll < 150
+export function useScrolling() {
+  const [scrolling, setScrolling] = useState(false)
+  useEffect(() => {
+    scrollWatchers.add(setScrolling)
+    return () => void scrollWatchers.delete(setScrolling)
+  }, [])
+  return scrolling
+}
+
+/** Resolves in the browser's next idle moment (or after `timeout` ms at the latest). */
+export const idle = (timeout = 1500) =>
+  new Promise<void>((resolve) => ('requestIdleCallback' in window ? requestIdleCallback(() => resolve(), { timeout }) : setTimeout(resolve, 200)))
+
+/**
+ * Idle *and* not scrolling: mounting a scene is one long task (the globe builds its hex grid), so it waits for the
+ * visitor to pause rather than land in the middle of a scroll.
+ */
+export async function quiet() {
+  for (;;) {
+    await idle()
+    if (!isScrolling()) return
+    await new Promise((r) => setTimeout(r, 120))
+  }
 }
 
 /** Lenis smooth scroll driven by GSAP's ticker, plus in-page anchor handling. */
@@ -68,7 +135,54 @@ export function useSmoothScroll(ready: boolean) {
     if (ready) lenis?.start()
     else lenis?.stop()
     if (ready) ScrollTrigger.refresh()
+    if (ready) markIntro()
   }, [ready])
+}
+
+/**
+ * Header + hero entrance in the page's motion style (anim.ts), played when the preloader hands over (its "Engineer"
+ * lands on the hero's own, which is left alone here). Built paused at mount, so everything is already in its
+ * start state and nothing flashes while the preloader fades.
+ */
+export function useIntro(ready: boolean) {
+  const intro = useRef<gsap.core.Timeline | null>(null)
+
+  useLayoutEffect(() => {
+    if (prefersReducedMotion()) return
+    const ctx = gsap.context(() => {
+      const title = document.querySelector<HTMLElement>('.hero h1.hero__title')!
+      const word = title.querySelector<HTMLElement>('.rotator__word')!
+      // When the letters have landed they go back to plain inline text (.is-settled, see sections.css).
+      const tl = gsap.timeline({ paused: true, onComplete: () => title.querySelector('.rotator')?.classList.add('is-settled') })
+      // mask: the title box is the mask the letters rise from.
+      tl.fromTo(title, { clipPath: 'inset(-40% -10% 0% -10%)' }, { clipPath: 'inset(-40% -10% 0% -10%)', duration: 1.6, clearProps: 'clipPath' }, 0)
+      tl.add(charsIn(gsap.utils.toArray<HTMLElement>('.hc', word), 1.3), 0)
+        .add(blockIn(gsap.utils.toArray('.header__name, .nav a, .header__end > *'), 0.05), 0.1)
+        .add(blockIn(gsap.utils.toArray('.cta > *'), 0.12), 0.35)
+        .add(blockIn(gsap.utils.toArray('.hero__goal')), 0.5)
+        .add(blockIn(gsap.utils.toArray('.socials li'), 0.07), 0.65)
+        .from('.hero .circle-wrap', { opacity: 0, scale: 0.6, duration: 1.8, stagger: 0.15, ease: 'expo.out' }, 0.3)
+      intro.current = tl
+    })
+    return () => ctx.revert()
+  }, [])
+
+  useEffect(() => {
+    if (ready) intro.current?.play()
+  }, [ready])
+}
+
+/**
+ * CSS animations keep invalidating style (and, for the SVG covers, layout) every frame even when their section is
+ * far off screen, which made scrolling stutter. Sections outside the viewport (plus a margin) get `.is-offscreen`,
+ * which pauses every animation inside them (index.css); they resume where they were when scrolled back.
+ */
+export function usePauseOffscreen() {
+  useEffect(() => {
+    const io = new IntersectionObserver((entries) => entries.forEach((e) => e.target.classList.toggle('is-offscreen', !e.isIntersecting)), { rootMargin: '200px 0px' })
+    document.querySelectorAll('main section, .footer').forEach((s) => io.observe(s))
+    return () => io.disconnect()
+  }, [])
 }
 
 /** Elements with `data-magnetic` (optionally a strength, e.g. "0.5") pull toward the cursor. */
@@ -146,30 +260,19 @@ export function useParallax() {
   }, [])
 }
 
-/** Fade-up for `[data-reveal]` and staggered children for `[data-reveal-stagger]`. */
+/**
+ * Scroll reveals in the page's motion style (anim.ts), all held until the intro is over:
+ * - `[data-reveal]` enters as one block.
+ * - `[data-reveal-stagger]` enters its children one after another (children with their own data-reveal-img skip it).
+ * - `[data-reveal-img]` brings a media box in whole (images are never uncovered progressively).
+ */
 export function useReveal() {
   useEffect(() => {
     if (prefersReducedMotion()) return
     const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => {
-        gsap.from(el, {
-          y: 48,
-          autoAlpha: 0,
-          duration: 1.1,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: el, start: 'top 88%', once: true },
-        })
-      })
-      gsap.utils.toArray<HTMLElement>('[data-reveal-stagger]').forEach((el) => {
-        gsap.from(el.children, {
-          y: 40,
-          autoAlpha: 0,
-          duration: 0.9,
-          stagger: 0.08,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: el, start: 'top 85%', once: true },
-        })
-      })
+      gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => revealOnScroll(el, blockIn(el)))
+      gsap.utils.toArray<HTMLElement>('[data-reveal-stagger]').forEach((el) => revealOnScroll(el, blockIn([...el.children].filter((c) => !c.matches('[data-reveal-img]')), 0.08), 'top 85%'))
+      gsap.utils.toArray<HTMLElement>('[data-reveal-img]').forEach((el) => revealOnScroll(el, mediaIn(el), 'top 85%'))
     })
     return () => ctx.revert()
   }, [])

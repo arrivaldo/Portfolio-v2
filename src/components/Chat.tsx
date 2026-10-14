@@ -51,6 +51,19 @@ export function Chat() {
     }
   }
 
+  // Other parts of the page (the Lab bento) can open the chat, optionally with a question: dispatch `chat:ask`.
+  const askRef = useRef(ask)
+  askRef.current = ask
+  useEffect(() => {
+    const onAsk = (e: Event) => {
+      setOpen(true)
+      const q = (e as CustomEvent<string | undefined>).detail
+      if (q) askRef.current(q)
+    }
+    window.addEventListener('chat:ask', onAsk)
+    return () => window.removeEventListener('chat:ask', onAsk)
+  }, [])
+
   const onSubmit = (e: FormEvent) => {
     e.preventDefault()
     ask(value)

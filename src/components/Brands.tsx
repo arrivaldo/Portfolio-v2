@@ -7,7 +7,7 @@ export function Brands() {
   const { t } = useLang()
 
   return (
-    <section className="brands" aria-label={t.ui.brandsLabel}>
+    <section className="brands" aria-label={t.ui.brandsLabel} data-reveal-stagger>
       <div className="brands__label">
         <span className="brands__count">{t.ui.brandsCount(brands.length)}</span>
         <p>{t.ui.brandsLabel}</p>

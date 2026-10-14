@@ -47,10 +47,10 @@ function ArticleCard({ article, variant }: CardProps) {
         <h3 className="card__title">{article.title}</h3>
         <p className="card__text">{article.description}</p>
         <div className="card__actions">
-          <a href={article.href} className="card__more" tabIndex={side ? -1 : 0}>
+          <a href={article.href} target="_blank" rel="noreferrer" className="card__more" tabIndex={side ? -1 : 0}>
             {t.ui.readMore}
           </a>
-          <a href={article.href} className="round round--light round--sm" tabIndex={side ? -1 : 0} aria-label={t.ui.readArticle}>
+          <a href={article.href} target="_blank" rel="noreferrer" className="round round--light round--sm" tabIndex={side ? -1 : 0} aria-label={t.ui.readArticle}>
             <ArrowRight size={14} />
           </a>
         </div>
@@ -105,6 +105,7 @@ export function Articles() {
     <section className="articles-section" id="articles">
       <div
         className="articles"
+        data-reveal-stagger
         data-dir={dir}
         aria-roledescription="carousel"
         data-cursor="Drag"

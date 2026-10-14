@@ -4,7 +4,13 @@ import { useLang } from '../i18n'
 import { pauseScroll, resumeScroll } from '../motion'
 import { ArrowUpRight } from './Icons'
 
-type Props = { project: Project | null; onClose: () => void }
+/**
+ * What the modal needs. Featured projects pass themselves (they have a metric); archive projects have no
+ * metric, so they pass their tagline as `kicker` instead.
+ */
+export type CaseData = Pick<Project, 'title' | 'image' | 'glow' | 'href' | 'stack' | 'story'> & { metric?: Project['metric']; kicker?: string }
+
+type Props = { project: CaseData | null; onClose: () => void }
 
 /** Problem → solution → result for one project, in a native modal dialog. */
 export function CaseStudy({ project, onClose }: Props) {
@@ -48,7 +54,13 @@ export function CaseStudy({ project, onClose }: Props) {
               {project.title}
             </h3>
             <p className="case__metric">
-              <strong>{project.metric.value}</strong> {project.metric.label}
+              {project.metric ? (
+                <>
+                  <strong>{project.metric.value}</strong> {project.metric.label}
+                </>
+              ) : (
+                project.kicker
+              )}
             </p>
             <ol className="case__steps">
               {(

@@ -6,7 +6,6 @@ import { Brands } from './components/Brands'
 import { Chat } from './components/Chat'
 import { Contact } from './components/Contact'
 import { Cursor } from './components/Cursor'
-import { FontPicker } from './components/FontPicker'
 import { Header } from './components/Header'
 import { Hero } from './components/Hero'
 import { Lab } from './components/Lab'
@@ -17,7 +16,7 @@ import { ScrollProgress } from './components/ScrollProgress'
 import { Testimonials } from './components/Testimonials'
 import { Work } from './components/Work'
 import { useLang } from './i18n'
-import { ScrollTrigger, useMagnetic, useParallax, useReveal, useSmoothScroll } from './motion'
+import { ScrollTrigger, useIntro, useMagnetic, useParallax, usePauseOffscreen, useReveal, useSmoothScroll } from './motion'
 import { Archive } from './components/Archive'
 
 export default function App() {
@@ -25,9 +24,11 @@ export default function App() {
   const { lang, t } = useLang()
 
   useSmoothScroll(ready)
+  useIntro(ready)
   useMagnetic()
   useParallax()
   useReveal()
+  usePauseOffscreen()
 
   // Copy changes alter section heights — re-measure pinned/scrubbed triggers.
   useEffect(() => {
@@ -47,7 +48,6 @@ export default function App() {
       <Preloader onDone={() => setReady(true)} />
       <Cursor />
       <ScrollProgress />
-      {import.meta.env.DEV && <FontPicker />}
       <Chat />
       <Analytics />
 

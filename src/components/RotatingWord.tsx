@@ -1,5 +1,5 @@
 import { useLayoutEffect, useRef } from 'react'
-import { gsap, prefersReducedMotion } from '../motion'
+import { gsap, onIntro, prefersReducedMotion } from '../motion'
 
 type Props = { words: string[]; interval?: number }
 
@@ -28,7 +28,11 @@ export function RotatingWord({ words, interval = 3000 }: Props) {
 
     if (prefersReducedMotion() || items.length < 2) return () => ctx.revert()
 
-    const id = window.setInterval(() => {
+    // Rotation starts once the hero entrance has played (the first word enters with it).
+    let id = 0
+    let alive = true
+    onIntro(() => alive && (id = window.setInterval(rotate, interval)))
+    function rotate() {
       if (document.hidden) return
       const prev = items[index]
       index = (index + 1) % items.length
@@ -58,9 +62,10 @@ export function RotatingWord({ words, interval = 3000 }: Props) {
             0.5,
           )
       })
-    }, interval)
+    }
 
     return () => {
+      alive = false
       clearInterval(id)
       ctx.revert()
     }
@@ -70,7 +75,11 @@ export function RotatingWord({ words, interval = 3000 }: Props) {
     <span className="rotator" ref={root} aria-hidden="true">
       {words.map((w) => (
         <span key={w} className="rotator__word">
-          {w}
+          {[...w].map((c, k) => (
+            <span key={k} className="hc">
+              {c}
+            </span>
+          ))}
         </span>
       ))}
     </span>

@@ -29,7 +29,7 @@ ol { list-style: none; }
 }
 /* The head owns the gap below it, whatever layout follows. */
 section > .section-head + * { margin-top: 0; }
-/* Follows the hero title font (--display*, driven by the dev FontPicker) — size stays per variant. */
+/* Follows the hero title font (--display*) — size stays per variant. */
 .section-title {
   font-family: var(--display);
   font-weight: var(--display-weight);
@@ -86,6 +86,12 @@ section > .section-head + * { margin-top: 0; }
 .section-title .split__mask { padding-right: 0.1em; margin-right: 0.15em; }
 .section-title .split__mask:last-child { margin-right: -0.1em; }
 .split__word { display: inline-block; transform-origin: 0 100%; }
+.split__char,
+.hc { display: inline-block; }
+/* The rotator's letters are only boxes while they animate in. Once the hero has entered they go back to plain inline
+   text: background-clip: text (its iridescent sweep) over inline-block children paints the glyphs in the wrong
+   place in some browsers, which stacked the letters on top of each other. */
+.rotator.is-settled .hc { display: inline; }
 
 /* ---------- Scroll progress ---------- */
 .scroll-progress {
@@ -216,7 +222,7 @@ section > .section-head + * { margin-top: 0; }
   display: grid;
   grid-template-columns: 1.05fr 1fr;
   gap: 36px;
-  height: min(420px, calc(100vh - 200px));
+  height: min(378px, calc(100vh - 200px));
   margin-bottom: 18vh;
   transform-origin: 50% 0;
   box-shadow: 0 -20px 50px rgba(0, 0, 0, 0.25);
@@ -270,7 +276,7 @@ section > .section-head + * { margin-top: 0; }
   text-transform: uppercase;
   letter-spacing: 0.12em;
 }
-/* Same --display* font as the hero and section titles (dev FontPicker); size stays its own. */
+/* Same --display* font as the hero and section titles; size stays its own. */
 .project__title {
   font-family: var(--display);
   font-size: clamp(26px, 2.6vw, 36px);
@@ -1881,7 +1887,7 @@ section > .section-head + * { margin-top: 0; }
   transform: scaleX(0);
   transform-origin: 0 50%;
 }
-.proof__lane:last-child i::after { background: linear-gradient(90deg, #7ef0ff, #c86cff, #ff7ac8); }
+.proof__lane:last-child i::after { background: #9284ff }
 .proof--race.is-on .proof__lane i::after { transform: scaleX(1); transition: transform var(--d) linear 0.2s; }
 .proof__lane b { font-weight: 500; color: var(--text); text-align: right; }
 /* Count: one dot per unit. */
@@ -1915,8 +1921,12 @@ section > .section-head + * { margin-top: 0; }
   overflow: auto;
 }
 .case::backdrop { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(6px); }
-.case[open] { animation: case-in 0.5s var(--ease-out); }
-@keyframes case-in { from { opacity: 0; transform: translateY(24px) scale(0.97); } }
+/* The dialog only fades; the panel inside carries the slide. A transform on the dialog itself would become the
+   containing block of the custom cursor (Cursor.tsx moves it into the open dialog) and throw it off the pointer. */
+.case[open] { animation: case-fade 0.5s var(--ease-out); }
+.case[open] .case__panel { animation: case-in 0.5s var(--ease-out); }
+@keyframes case-fade { from { opacity: 0; } }
+@keyframes case-in { from { transform: translateY(24px) scale(0.97); } }
 .case__panel { position: relative; display: grid; grid-template-columns: 1fr 1.1fr; }
 .case__close { position: absolute; top: 16px; right: 16px; z-index: 1; font-size: 14px; cursor: pointer; }
 .case__art {
@@ -1982,6 +1992,9 @@ section > .section-head + * { margin-top: 0; }
 }
 .archive__all:hover { color: var(--text); }
 .archive__row {
+  /* A <button> (it opens the case study): stretch it like the old link and keep text left-aligned. */
+  width: 100%;
+  text-align: left;
   display: grid;
   grid-template-columns: 220px 1fr 220px 24px;
   align-items: center;
@@ -1998,12 +2011,12 @@ section > .section-head + * { margin-top: 0; }
   display: block;
   margin-top: 2px;
   font-family: var(--sans);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 400;
   color: var(--muted);
 }
 .archive__desc { font-size: 13px; line-height: 1.5; color: var(--muted); }
-.archive__stack { font-family: var(--mono); font-size: 11px; color: var(--social-text); }
+.archive__stack { font-family: var(--mono); font-size: 12px; color: var(--social-text); }
 .archive__arrow { color: var(--muted); transition: transform 0.35s var(--ease-out), color 0.2s; }
 .archive__row:hover .archive__arrow { color: var(--text); transform: translate(3px, -3px); }
 
@@ -2197,39 +2210,6 @@ img.quote__avatar { object-fit: cover; }
   .glass__wave,
   .glass__orbit,
   .glass__braces { animation: none; }
-}
-
-/* ---------- Dev-only hero font picker (temporary) ---------- */
-.font-picker {
-  position: fixed;
-  left: 50%;
-  bottom: 16px;
-  z-index: 9999;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  max-width: calc(100vw - 32px);
-  padding: 8px;
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  background: var(--bg, #111);
-  transform: translateX(-50%);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-}
-.font-picker button {
-  padding: 6px 12px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text);
-  font: 12px var(--mono);
-  cursor: pointer;
-}
-.font-picker button.is-active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-/* On narrow screens the bar wraps across the full width — sit it above the chat button. */
-@media (max-width: 860px) {
-  .font-picker { bottom: 76px; }
 }
 
 /* ---------- Experience as git log ---------- */

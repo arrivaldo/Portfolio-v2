@@ -2,15 +2,17 @@ import { useEffect, useRef, useState } from 'react'
 import { socials } from '../data'
 import { useLang } from '../i18n'
 import { gsap, hasFinePointer, prefersReducedMotion } from '../motion'
+import { CaseStudy, type CaseData } from './CaseStudy'
 import { ArrowUpRight } from './Icons'
 import { SectionHead } from './SectionHead'
 
-/** Compact list of smaller projects, its own page section, framed like a project card. */
+/** Compact list of smaller projects, its own page section, framed like a project card. A row opens the same case-study modal as the featured projects. */
 export function Archive() {
   const { t } = useLang()
   const github = socials.find((s) => s.id === 'github')!.href
   const [active, setActive] = useState(0)
   const [hovering, setHovering] = useState(false)
+  const [open, setOpen] = useState<CaseData | null>(null)
   const preview = useRef<HTMLDivElement>(null)
 
   // Same floating card as Experience: trails the cursor and slides to the hovered project's image.
@@ -43,7 +45,12 @@ export function Archive() {
         <ul className="archive__list" data-reveal-stagger onPointerEnter={() => setHovering(true)} onPointerLeave={() => setHovering(false)}>
           {t.archive.map((p, i) => (
             <li key={p.name} onPointerEnter={() => setActive(i)}>
-              <a href={p.href} target="_blank" rel="noreferrer" className="archive__row" data-cursor={t.ui.viewCase}>
+              <button
+                type="button"
+                className="archive__row"
+                data-cursor={t.ui.viewCase}
+                onClick={() => setOpen({ title: p.name, kicker: p.tagline, image: p.image, glow: p.glow, href: p.href, stack: p.stack, story: p.story })}
+              >
                 <span className="archive__name">
                   {p.name}
                   <small>{p.tagline}</small>
@@ -51,7 +58,7 @@ export function Archive() {
                 <span className="archive__desc">{p.description}</span>
                 <span className="archive__stack">{p.stack.join(' · ')}</span>
                 <ArrowUpRight size={18} className="archive__arrow" />
-              </a>
+              </button>
             </li>
           ))}
         </ul>
@@ -69,6 +76,8 @@ export function Archive() {
           </div>
         </div>
       </div>
+
+      <CaseStudy project={open} onClose={() => setOpen(null)} />
     </section>
   )
 }

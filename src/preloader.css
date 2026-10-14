@@ -1,99 +1,80 @@
 /* =========================================================
-   Preloader (Preloader.tsx): a CI run of the three roles; the E/ ring fills with real loading,
-   then the mark flies into the header logo while the panel lifts away.
+   Preloader (Preloader.tsx): "Engineer" with the full name beneath it, the article-cover glass shapes orbiting
+   it in 3D, "(Loading) 0%" in the corners; then the shapes spiral in and the word flies onto the hero's
+   "Engineer" while the panel fades away.
    ========================================================= */
-.boot {
+.mono {
   position: fixed;
   inset: 0;
   z-index: 100;
   display: grid;
   place-items: center;
+  overflow: hidden;
   color: var(--text);
-  pointer-events: none;
-}
-.boot__panel {
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(40% 35% at 50% 42%, color-mix(in srgb, #c86cff 10%, transparent), transparent 70%),
-    var(--frame);
-  clip-path: inset(0 0 0 0);
   pointer-events: auto;
 }
-.boot__center {
+.mono__bg { position: absolute; inset: 0; background: var(--frame); }
+
+.mono__stage {
   position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 36px;
-  width: min(320px, calc(100vw - 48px));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 2vw, 26px);
 }
 
-/* Mark: same artwork as the header logo, ring as the progress gauge. */
-.boot__mark { width: 112px; height: 112px; will-change: transform; }
-.boot__mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
-.boot__track { fill: none; stroke: var(--line); stroke-width: 1.5; }
-.boot__ring { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; }
-.boot__mark-e { fill: currentColor; }
+.mono__word {
+  position: relative; /* paint above .mono__bg (positioned layers cover in-flow text) */
+  z-index: 1; /* between the orbit's far (0) and near (2) halves */
+  display: flex;
+  align-items: center;
+  font-family: var(--display);
+  font-weight: var(--display-weight); /* same as the hero "Engineer" it lands on */
+  font-style: var(--display-style);
+  font-stretch: var(--display-stretch);
+  font-size: clamp(44px, 7.5vw, 128px);
+  line-height: 1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
 
-/* Log: one line per stage, like a pipeline run. */
-.boot__log {
-  display: grid;
-  gap: 10px;
-  width: 100%;
+/* Full name under the word: masked letters rise in, and leave before the word flies to the hero. */
+.mono__name {
+  display: flex;
+  overflow: hidden;
+  margin-right: -0.38em; /* cancel the trailing letter-spacing so it centers */
+  font-family: var(--mono);
+  font-size: clamp(11px, 1.1vw, 15px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.38em;
+  color: var(--muted);
+}
+.mono__name i { display: block; font-style: normal; }
+
+/* Shapes ride an ellipse around the word; z-index puts them in front of or behind it (no stacking context here). */
+.orbit { position: absolute; top: 50%; left: 50%; width: 0; height: 0; font-size: clamp(44px, 7.5vw, 128px); }
+.orbit__shape {
+  position: absolute;
+  left: -0.32em;
+  top: -0.42em;
+  width: 0.64em;
+  height: 0.84em;
+  overflow: hidden;
+  border-radius: 0.1em;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+}
+.orbit__shape .glass { display: block; width: 100%; height: 100%; }
+
+.mono__corner {
+  position: absolute;
+  bottom: clamp(16px, 3vh, 28px);
+  overflow: hidden;
   font-family: var(--mono);
   font-size: 13px;
-}
-.boot__log li {
-  display: grid;
-  grid-template-columns: 18px 1fr;
-  align-items: center;
-  gap: 10px;
-  color: var(--muted);
-  opacity: 0.45;
-  transition: opacity 0.3s, color 0.3s;
-}
-.boot__log li.is-running,
-.boot__log li.is-done { opacity: 1; }
-.boot__log li.is-running { color: var(--text); }
-.boot__status {
-  display: grid;
-  place-items: center;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  border: 1.5px solid var(--line);
-  font-size: 10px;
-  line-height: 1;
-}
-.boot__log li.is-running .boot__status {
-  border-color: var(--line);
-  border-top-color: #c86cff;
-  animation: boot-spin 0.7s linear infinite;
-}
-.boot__log li.is-done .boot__status {
-  border-color: transparent;
-  background: color-mix(in srgb, #3ddc84 18%, transparent);
-  color: #3ddc84;
-}
-@keyframes boot-spin { to { transform: rotate(360deg); } }
-
-/* Meter: thin iridescent bar + zero-padded percentage. */
-.boot__meter {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 14px;
-  width: 100%;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: var(--muted);
   font-variant-numeric: tabular-nums;
+  color: var(--text);
 }
-.boot__bar { position: relative; height: 2px; overflow: hidden; border-radius: 2px; background: var(--line); }
-.boot__bar span {
-  position: absolute;
-  inset: 0;
-  background: var(--iris);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-}
+.mono__corner > span { display: block; }
+.mono__corner--left { left: clamp(16px, 2vw, 28px); }
+.mono__corner--right { right: clamp(16px, 2vw, 28px); }

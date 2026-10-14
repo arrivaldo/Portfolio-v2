@@ -75,6 +75,7 @@ export function Projects() {
           <article key={p.id} className="project" style={{ '--i': i, '--glow': p.glow } as CSSProperties}>
             <div
               className={`project__art project__art--${art}`}
+              data-reveal-img
               onPointerMove={art === 'holo' ? trackHolo : undefined}
               onPointerLeave={art === 'holo' ? resetHolo : undefined}
             >
@@ -86,7 +87,7 @@ export function Projects() {
               <img src={p.image} alt={p.title} loading="lazy" decoding="async" />
               <span className="project__index">{String(i + 1).padStart(2, '0')}</span>
             </div>
-            <div className="project__body">
+            <div className="project__body" data-reveal-stagger>
               <h3 className="project__title">{p.title}</h3>
               <p className="project__summary">{p.summary}</p>
               <div className="project__metric">

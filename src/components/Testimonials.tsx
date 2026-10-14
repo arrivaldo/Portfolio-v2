@@ -11,7 +11,7 @@ const initials = (name: string) =>
 
 function Row({ items, reverse }: { items: Testimonial[]; reverse?: boolean }) {
   return (
-    <div className={`marquee${reverse ? ' marquee--reverse' : ''}`}>
+    <div className={`marquee${reverse ? ' marquee--reverse' : ''}`} data-reveal>
       {/* The list is rendered twice so the loop is seamless; the copy is hidden from assistive tech. */}
       {[0, 1].map((copy) => (
         <ul key={copy} className="marquee__list" aria-hidden={copy === 1}>

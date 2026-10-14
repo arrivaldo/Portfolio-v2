@@ -20,7 +20,8 @@
     "postprocessing": "^6.39.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "three": "^0.186.1"
+    "three": "^0.186.1",
+    "three-globe": "2.45.2"
   },
   "devDependencies": {
     "@playwright/test": "^1.63.0",

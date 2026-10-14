@@ -1,12 +1,12 @@
 :root {
   --mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
   --sans: 'Open Sans', system-ui, -apple-system, sans-serif;
-  /* Hero title font. While comparing candidates, the dev-only FontPicker overrides these. */
-  --display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  /* Hero/display font. Other candidates we liked are recorded in docs/fonts.md. */
+  --display: 'Syne', system-ui, sans-serif;
   --display-weight: 600;
-  --display-style: italic;
+  --display-style: normal;
   --display-stretch: 100%;
-  --display-size: clamp(44px, 8.8vw, 88px);
+  --display-size: clamp(44px, 8.8vw, 82px);
   --gutter: 56px;
 }
 
@@ -236,6 +236,12 @@ em {
 .lang button { color: var(--muted); transition: color 0.2s; }
 .lang button.is-active,
 .lang button:hover { color: var(--text); }
+
+/* Sections off screen pause their CSS animations (usePauseOffscreen in motion.ts). */
+.is-offscreen,
+.is-offscreen *,
+.is-offscreen *::before,
+.is-offscreen *::after { animation-play-state: paused !important; }
 
 /* ---------- Hero ---------- */
 .hero {

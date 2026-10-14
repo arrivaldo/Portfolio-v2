@@ -1,10 +1,11 @@
 import { useLayoutEffect, useRef } from 'react'
-import { gsap, prefersReducedMotion } from '../motion'
+import { charsIn } from '../anim'
+import { gsap, prefersReducedMotion, revealOnScroll } from '../motion'
 
 /** `as` is limited to text tags — React Three Fiber also registers 3D elements in JSX's intrinsic elements. */
 type Props = { text: string; as?: 'h1' | 'h2' | 'h3' | 'p' | 'span' | 'div'; className?: string }
 
-/** Heading whose words slide up from behind a mask when scrolled into view. */
+/** Text split into words and letters that rise from behind their word's box when scrolled into view. */
 export function SplitReveal({ text, as = 'h2', className }: Props) {
   const ref = useRef<HTMLHeadingElement>(null)
   // All allowed tags share the same props; typing it as one keeps TS from expanding the union.
@@ -13,14 +14,7 @@ export function SplitReveal({ text, as = 'h2', className }: Props) {
   useLayoutEffect(() => {
     if (!ref.current || prefersReducedMotion()) return
     const ctx = gsap.context(() => {
-      gsap.from('.split__word', {
-        yPercent: 115,
-        rotate: 4,
-        duration: 1.1,
-        stagger: 0.06,
-        ease: 'power4.out',
-        scrollTrigger: { trigger: ref.current, start: 'top 88%', once: true },
-      })
+      revealOnScroll(ref.current!, charsIn(gsap.utils.toArray<HTMLElement>('.split__char', ref.current)))
     }, ref)
     return () => ctx.revert()
   }, [text])
@@ -29,7 +23,13 @@ export function SplitReveal({ text, as = 'h2', className }: Props) {
     <Tag ref={ref} className={`split ${className ?? ''}`} aria-label={text}>
       {text.split(' ').map((word, i) => (
         <span key={`${word}-${i}`} className="split__mask" aria-hidden="true">
-          <span className="split__word">{word}</span>
+          <span className="split__word">
+            {[...word].map((c, k) => (
+              <span key={k} className="split__char">
+                {c}
+              </span>
+            ))}
+          </span>
         </span>
       ))}
     </Tag>

@@ -21,13 +21,26 @@ export type Project = {
   proof: Proof
   story: { problem: string; solution: string; result: string }
 }
-export type ArchiveProject = { name: string; tagline: string; description: string; stack: string[]; href: string; image: string }
+/** Smaller projects. `story` feeds the same case-study modal as the featured projects (drafted by Claude from the v1 descriptions — user to review). */
+export type ArchiveProject = { name: string; tagline: string; description: string; stack: string[]; href: string; image: string; glow: string; story: { problem: string; solution: string; result: string } }
 export type Stat = { value: number; prefix?: string; suffix?: string; decimals?: number; label: string }
 export type Step = { title: string; text: string; tags: string[] }
 export type Testimonial = { quote: string; name: string; role: string; photo?: string }
 export type Role = { slug: string; title: string; description: string; stack: string[]; signal: string }
 export type NowItem = { label: string; text: string }
 
+
+/** One manual task raced against its automation in the Lab. Minutes/seconds/runs are illustrative. */
+export type LabTask = { id: string; name: string; manual: string[]; auto: [string, string][]; manualMin: number; autoSec: number; runsPerMonth: number }
+export type LabNeed = { id: string; label: string; role: string; stack: string[]; phases: [string, number][] }
+export type LabStep = { tool: string; text: string; log: string }
+export type LabCopy = {
+  bento: { title: string; lead: string; globeTitle: string; globeText: string; cubeTitle: string; cubeText: string; timeTitle: string; day: string; night: string; ahead: string; behind: string; same: string; nowTitle: string; ghTitle: string; ghText: string; ghNote: string; ghError: string; askTitle: string; askText: string; askOpen: string }
+  automate: { title: string; lead: string; manual: string; auto: string; run: string; again: string; saved: string; perMonth: string; note: string; tasks: LabTask[] }
+  mission: { title: string; lead: string; live: string; activity: string; feed: string; languages: string; repos: string; lastPush: string; pushed: string; loading: string; error: string; open: string; ago: [string, string, string, string] }
+  plan: { title: string; lead: string; ask: string; empty: string; plan: string; weeks: string; week: string; ongoing: string; stack: string; roles: string; cta: string; note: string; kickoff: string; handover: string; needs: LabNeed[] }
+  incident: { title: string; lead: string; alert: string; resolved: string; replay: string; mttr: string; postmortem: string; post: [string, string][]; steps: LabStep[] }
+}
 
 export type Content = {
   meta: { title: string; description: string }
@@ -50,10 +63,8 @@ export type Content = {
   nav: { label: string; href: string }[]
   ui: {
     projects: string
-    resume: string
     loading: string
-    /** Preloader CI stages, one per role (drafted 2026-10-08). */
-    preloaderSteps: string[]
+    resume: string
     readMore: string
     readArticle: string
     prevArticle: string
@@ -83,9 +94,8 @@ export type Content = {
     testimonialsLabel: string
     testimonialsTitle: string
     labLabel: string
-    /** Cube options for the Lab (?lab=cube|rolecube|rubik). Copy drafted by Claude — user to review. */
-    /** Constellation Lab (default). Copy drafted by Claude — user to review. */
-    labConstellation: { title: string; lead: string; hint: string; roles: string; projects: string; none: string }
+    /** Lab demos (?lab=automate|mission|plan|incident). Copy and figures drafted by Claude — user to review. */
+    lab: LabCopy
     contactLabel: string
     contactTitle: [string, string]
     contactText: string
@@ -183,16 +193,20 @@ const projectsBase = [
   { id: 'agency', title: 'Software Agency App', stack: ['React', 'TypeScript', 'Next.js'], image: '/projects/agency.webp', glow: '#ff8a3d', href: 'https://rodri-labs.vercel.app/', proof: { kind: 'live' } as Proof },
 ]
 
-// TODO: `image` values are PLACEHOLDERS reused from /projects — replace with real screenshots.
 const archiveBase = [
-  { name: 'QueueStack', stack: ['TypeScript', 'HTML', 'JavaScript'], href: 'https://github.com/arrivaldo/To-Do-Extension', image: '/projects/incidents.webp' },
-  { name: 'Heimdall', stack: ['TypeScript', 'React', 'Ruby'], href: 'https://heimdall.yalochat.com/', image: '/projects/ai-email.webp' },
-  { name: 'MERN Blog + AWS S3', stack: ['MongoDB', 'Express', 'Node.js', 'React'], href: 'https://github.com/arrivaldo/Blog-app', image: '/projects/blog.webp' },
-  { name: 'webtemplate-js', stack: ['JavaScript', 'HTML', 'CSS'], href: 'https://www.npmjs.com/package/webtemplate-js', image: '/projects/agency.webp' },
-  { name: 'notes.io', stack: ['MongoDB', 'Express', 'React', 'Node.js', 'JWT'], href: 'https://quicknotes-io.vercel.app/', image: '/projects/artist.webp' },
-  { name: 'Docs-pi-app', stack: ['React', 'Tailwind CSS', 'Vite'], href: 'https://docs-pi-app.vercel.app/', image: '/projects/incidents.webp' },
-  { name: 'Store management system', stack: ['C'], href: 'https://onlinegdb.com/OXOlVWJFj', image: '/projects/ai-email.webp' },
-  { name: 'Arkanoid', stack: ['Java'], href: 'https://github.com/arrivaldo/Java-Arkanoid', image: '/projects/blog.webp' },
+  { name: 'QueueStack', stack: ['TypeScript', 'HTML', 'JavaScript'], href: 'https://github.com/arrivaldo/To-Do-Extension', image: '/projects/todoExtension.webp', glow: '#22c3e6' },
+  { name: 'Heimdall', stack: ['TypeScript', 'React', 'Ruby'], href: 'https://heimdall.yalochat.com/', image: '/projects/heimdall.webp', glow: '#8b7cff' },
+  { name: 'MERN Blog + AWS S3', stack: ['MongoDB', 'Express', 'Node.js', 'React'], href: 'https://github.com/arrivaldo/Blog-app', image: '/projects/MERNblog.webp', glow: '#4d7cff' },
+  { name: 'webtemplate-js', stack: ['JavaScript', 'HTML', 'CSS'], href: 'https://www.npmjs.com/package/webtemplate-js', image: '/projects/webtemplate.webp', glow: '#ff8a3d' },
+  { name: 'notes.io', stack: ['MongoDB', 'Express', 'React', 'Node.js', 'JWT', 'bcrypt'], href: 'https://quicknotes-io.vercel.app/', image: '/projects/notes.webp', glow: '#3ddc84' },
+  { name: 'Docs-pi-app', stack: ['React', 'Tailwind CSS', 'Vite'], href: 'https://docs-pi-app.vercel.app/', image: '/projects/docs.webp', glow: '#ff7ac8' },
+  { name: 'Store management system', stack: ['C'], href: 'https://onlinegdb.com/OXOlVWJFj', image: '/projects/StoreManagementSystem.webp', glow: '#22c3e6' },
+  { name: 'Arkanoid', stack: ['Java'], href: 'https://github.com/arrivaldo/Java-Arkanoid', image: '/projects/arkanoid.webp', glow: '#ffb020' },
+  { name: 'ScreenRec.io', stack: ['JavaScript', 'HTML', 'CSS'], href: 'https://screen-recorder-apk.vercel.app/', image: '/projects/screenRecorder.webp', glow: '#8b7cff' },
+  { name: 'Convert.io', stack: ['React', 'Next.js', 'Shadcn/ui', 'ffmpeg'], href: 'https://convertio-file.vercel.app/', image: '/projects/convertio.webp', glow: '#7ef0ff' },
+  { name: 'Threefolio', stack: ['JavaScript', 'Three.js', 'GSAP'], href: 'https://threefolio.vercel.app/', image: '/projects/threefolio.webp', glow: '#c86cff' },
+  // v1 linked Reply.io to docs-pi-app by mistake; this is its Spring Boot repo on GitHub.
+  { name: 'Reply.io', stack: ['Java', 'Spring Boot', 'JavaScript'], href: 'https://github.com/arrivaldo/email-writer-spring-boot', image: '/projects/emailWriter.webp', glow: '#4d7cff' },
 ]
 
 const jobsBase = [
@@ -258,9 +272,8 @@ const en: Content = {
   ],
   ui: {
     projects: 'Explore my work',
-    resume: 'Resume',
     loading: 'Loading',
-    preloaderSteps: ['Building software', 'Running quality checks', 'Automating the deploy'],
+    resume: 'Resume',
     readMore: 'Open',
     readArticle: 'Open link',
     prevArticle: 'Previous',
@@ -288,8 +301,103 @@ const en: Content = {
     processTitle: 'What I do',
     testimonialsLabel: '... /Testimonials ...',
     testimonialsTitle: 'What they said about me',
-    labLabel: '... /Lab ...',
-    labConstellation: { title: 'Everything connects', lead: 'Every tool I use, linked to the roles where it does its job. *Hover a star* to follow its lines.', hint: 'Hover or tap a technology', roles: 'Roles', projects: 'Projects', none: 'Used across client work' },
+    labLabel: '... /Beyond ...',
+    lab: {
+      bento: {
+        title: 'Beyond the code',
+        lead: 'Where I work from, what I am on right now and what I build with. *Drag the globe and the cube.*',
+        globeTitle: 'México → the world',
+        globeText: 'Remote-first, working with teams across time zones.',
+        cubeTitle: 'Tech stack',
+        cubeText: 'tools across six roles',
+        timeTitle: 'Local time',
+        day: 'daytime',
+        night: 'night time',
+        ahead: 'ahead of you',
+        behind: 'behind you',
+        same: 'same time as you',
+        nowTitle: 'Right now',
+        ghTitle: 'GitHub',
+        ghText: 'personal contributions since',
+        ghNote: 'Personal account only. My work for employers and clients lives in their private corporate GitHub accounts, so it does not show here.',
+        ghError: 'GitHub is not answering right now.',
+        askTitle: 'Ask my portfolio',
+        askText: 'An AI assistant that knows my work. Pick a question or ask your own.',
+        askOpen: 'Open the chat',
+      },
+      automate: {
+        title: 'Automate this',
+        lead: 'Pick a task people still do by hand and watch it *race its automation*.',
+        manual: 'By hand',
+        auto: 'Automated',
+        run: 'Run race',
+        again: 'Run again',
+        saved: 'saved per month',
+        perMonth: 'runs a month',
+        note: 'Typical figures from my client work; every team is different.',
+        tasks: [
+          { id: 'report', name: 'Weekly sales report', manualMin: 95, autoSec: 42, runsPerMonth: 4, manual: ['Export CSVs from 3 systems', 'Merge them in Excel', 'Fix formats and duplicates', 'Build the charts', 'Write the summary email', 'Send it to 12 people'], auto: [['Cron trigger', 'n8n'], ['Query SQL + CRM API', 'Python'], ['Clean and merge', 'pandas'], ['Render the PDF report', 'Lambda'], ['Post to Slack + email', 'Webhooks']] },
+          { id: 'qa', name: 'Checkout regression test', manualMin: 180, autoSec: 210, runsPerMonth: 8, manual: ['Open the browser and log in', 'Add products to the cart', 'Try 6 payment methods', 'Check totals and emails', 'Repeat it all on mobile', 'Write the bug report'], auto: [['Pull request opened', 'GitHub Actions'], ['48 end-to-end tests', 'Playwright'], ['API contract tests', 'Postman'], ['Mobile viewport run', 'Playwright'], ['Report + screenshots on the PR', 'CI']] },
+          { id: 'triage', name: 'Support ticket triage', manualMin: 120, autoSec: 25, runsPerMonth: 22, manual: ['Read every new ticket', 'Search the logs for the user', 'Guess the priority', 'Assign it to a team', 'Reply to the customer'], auto: [['New ticket webhook', 'Zendesk'], ['Classify + set priority', 'LLM + RAG'], ['Pull the user\'s logs', 'Datadog API'], ['Route to the right team', 'Jira'], ['Draft a reply for review', 'MCP']] },
+        ],
+      },
+      mission: {
+        title: 'Mission control',
+        lead: 'My real GitHub activity, *live*. No mockups.',
+        live: 'Live',
+        activity: 'Activity · last 12 months',
+        feed: 'Latest pushes',
+        languages: 'Languages',
+        repos: 'public repos',
+        lastPush: 'last push',
+        pushed: 'pushed to',
+        loading: 'Connecting to GitHub…',
+        error: 'GitHub is not answering right now.',
+        open: 'Open my GitHub',
+        ago: ['just now', 'min ago', 'h ago', 'd ago'],
+      },
+      plan: {
+        title: 'Build your project',
+        lead: 'Tick what you need and get a *first plan* in seconds: phases, stack and who does what.',
+        ask: 'What do you need?',
+        empty: 'Pick at least one option to see the plan.',
+        plan: 'Your plan',
+        weeks: 'weeks',
+        week: 'Wk',
+        ongoing: 'ongoing',
+        stack: 'Stack',
+        roles: 'Roles',
+        cta: "Let's talk about it",
+        note: 'A starting point for a conversation, not a quote.',
+        kickoff: 'Discovery and architecture',
+        handover: 'Launch and handover',
+        needs: [
+          { id: 'web', label: 'A web or mobile app', role: 'Software Engineer', stack: ['React', 'Node.js', 'TypeScript', 'AWS'], phases: [['Design and API contracts', 1], ['Build front end and back end', 3]] },
+          { id: 'qa', label: 'Automated testing', role: 'Quality Assurance', stack: ['Playwright', 'Postman', 'GitHub Actions'], phases: [['Test strategy and critical paths', 1], ['E2E and API suites in CI', 2]] },
+          { id: 'auto', label: 'Automations and AI agents', role: 'Automation Engineer', stack: ['n8n', 'Python', 'AWS Lambda', 'RAG'], phases: [['Map the manual workflows', 1], ['Build the flows and agents', 2]] },
+          { id: 'support', label: 'Production support', role: 'Senior Product Engineer', stack: ['Datadog', 'CloudWatch', 'SQL'], phases: [['Observability and runbooks', 1], ['L2/L3 support and root-cause fixes', 0]] },
+        ],
+      },
+      incident: {
+        title: 'Live incident',
+        lead: 'Production breaks at 2 a.m. This is *how I take it from alert to postmortem*.',
+        alert: 'ALERT · checkout returning 500s',
+        resolved: 'Resolved',
+        replay: 'Replay incident',
+        mttr: 'time to resolve',
+        postmortem: 'Postmortem',
+        post: [['Root cause', 'Yesterday\'s migration dropped an index on orders; checkout queries waited on row locks.'], ['Fix', 'Index rebuilt concurrently, plus retries with backoff on the payment call.'], ['Prevention', 'A CI check that blocks migrations without index review, and an alert on lock wait time.']],
+        steps: [
+          { tool: 'Datadog', text: 'Checkout 5xx up 340%, p95 at 4.8 s', log: 'monitor: checkout.errors > threshold (02:14)' },
+          { tool: 'CloudWatch', text: 'The payment service is timing out', log: 'TimeoutError: POST /pay exceeded 30000ms' },
+          { tool: 'Tracing', text: 'Every slow request waits on the database', log: 'span db.orders.select_for_update 28.2s' },
+          { tool: 'SQL', text: 'Root cause: missing index after a migration', log: 'EXPLAIN → Seq Scan on orders (rows=4.1M)' },
+          { tool: 'Hotfix', text: 'Rebuild the index, add retry with backoff', log: 'CREATE INDEX CONCURRENTLY idx_orders_status…' },
+          { tool: 'Playwright', text: 'Checkout suite green on staging', log: '48 passed (1.9m)' },
+          { tool: 'Deploy', text: 'Canary 10% → 100%, errors back to normal', log: 'rollout complete · 5xx 0.02%' },
+        ],
+      },
+    },
     contactLabel: '... /Contact ...',
     contactTitle: ["Let's work", 'together'],
     contactText: "I'm open to collaborating on new projects or just chatting about software, automation and technology.",
@@ -366,14 +474,18 @@ const en: Content = {
     { ...projectsBase[4], summary: 'Agency landing page showcasing a professional profile.', metric: { value: 'Live', label: 'agency landing page' }, story: { problem: 'A software agency needed a landing page that presented its profile with credibility.', solution: 'A Next.js + TypeScript landing with clear service sections and a strong visual identity.', result: 'Live as the agency\'s landing page.' } },
   ],
   archive: [
-    { ...archiveBase[0], tagline: 'VS Code extension', description: 'A to-do extension for Visual Studio Code to manage coding tasks, available in the marketplace.' },
-    { ...archiveBase[1], tagline: "Yalo's Swiss Army", description: 'Internal tool used by the support team to automate processes and execute API requests.' },
-    { ...archiveBase[2], tagline: 'Full-stack blog', description: 'MERN blog with CRUD operations and AWS S3 storage.' },
-    { ...archiveBase[3], tagline: 'NPM package', description: 'Customizable web template generator that gives a clean starting point for web apps.' },
-    { ...archiveBase[4], tagline: 'Full-stack MERN app', description: 'Notes app with CRUD operations and built-in authentication.' },
-    { ...archiveBase[5], tagline: 'Documentation library', description: 'Stores web resources such as technology documentation, assets and tools.' },
-    { ...archiveBase[6], tagline: 'Written in C', description: "School project that simulates a store's internal system." },
-    { ...archiveBase[7], tagline: 'Game in Java', description: 'An Arkanoid game built to explore the Java language.' },
+    { ...archiveBase[8], tagline: 'Free screen recorder', description: 'A screen recorder web app for anyone who does not want to pay for an online one.', story: { problem: 'Online screen recorders hide basic recording behind paywalls, watermarks or sign-ups.', solution: 'A screen recorder that runs entirely in the browser, built with plain JavaScript, HTML and CSS.', result: 'A free utility, live on Vercel, for anyone who needs to record their screen.' } },
+    { ...archiveBase[9], tagline: 'Media converter', description: 'Converts images, audio and video in the browser, for free and without restrictions.', story: { problem: 'Converting media usually means uploading files to sites full of limits, ads or paywalls.', solution: 'An online converter for images, audio and video, built with Next.js and Shadcn/ui on top of ffmpeg.', result: 'Free media conversion without restrictions, live on Vercel.' } },
+    { ...archiveBase[0], tagline: 'VS Code extension', description: 'A to-do extension for Visual Studio Code to manage coding tasks, available in the marketplace.', story: { problem: 'Small coding tasks lived in notes outside the editor and kept getting lost.', solution: 'A Visual Studio Code extension that keeps a to-do list right inside the editor, next to the code.', result: 'Published in the VS Code marketplace, with setup instructions on GitHub.' } },
+    { ...archiveBase[1], tagline: "Yalo's Swiss Army", description: 'Internal tool used by the support team to automate processes and execute API requests.', story: { problem: 'Yalo\'s support team ran repetitive processes and API requests by hand, one ticket at a time.', solution: 'An internal tool in TypeScript, React and Ruby that automates those processes and runs the API requests from one place.', result: 'I created and maintained it as the support team\'s everyday "Swiss Army knife".' } },
+    { ...archiveBase[2], tagline: 'Full-stack blog', description: 'MERN blog with CRUD operations and AWS S3 storage.', story: { problem: 'I wanted a blog with real file storage, not just uploads saved on the server.', solution: 'A MERN blog with full CRUD for posts and images stored in AWS S3.', result: 'Source code on GitHub; deployment is pending.' } },
+    { ...archiveBase[10], tagline: 'Three.js canvas', description: 'An interactive Three.js plane animated with GSAP, built as a dynamic hero component.', story: { problem: 'A static hero section rarely makes a strong first impression.', solution: 'An interactive Three.js plane animated with GSAP that reacts as you use it.', result: 'A dynamic hero component, live on Vercel.' } },
+    { ...archiveBase[11], tagline: 'AI email replier', description: 'Generates personalized email replies with AI, in different conversation tones.', story: { problem: 'Writing a good reply takes time, and getting the tone right takes even longer.', solution: 'A Spring Boot backend with a JavaScript client that generates personalized email replies with AI, in different tones.', result: 'The engine behind my AI email assistant; source code on GitHub.' } },
+    { ...archiveBase[3], tagline: 'NPM package', description: 'Customizable web template generator that gives a clean starting point for web apps.', story: { problem: 'Every new web project started by rewriting the same boilerplate.', solution: 'An npm package that generates a clean, customizable web template to start from.', result: 'Published on npm, ready to install.' } },
+    { ...archiveBase[4], tagline: 'Full-stack MERN app', description: 'Notes app with CRUD operations and built-in authentication.', story: { problem: 'I wanted to build a full-stack app with real authentication, end to end.', solution: 'A MERN notes app with CRUD operations and authentication built on JWT and bcrypt.', result: 'Live on Vercel.' } },
+    { ...archiveBase[5], tagline: 'Documentation library', description: 'Stores web resources such as technology documentation, assets and tools.', story: { problem: 'Documentation, assets and tools I use were scattered across bookmarks and tabs.', solution: 'A documentation library in React, Vite and Tailwind that keeps those resources organized in one place.', result: 'Live on Vercel as my day-to-day reference.' } },
+    { ...archiveBase[6], tagline: 'Written in C', description: "School project that simulates a store's internal system.", story: { problem: 'A school programming project: simulate a store\'s internal system.', solution: 'A program written in C that models the store\'s internal operations.', result: 'Runnable online on OnlineGDB.' } },
+    { ...archiveBase[7], tagline: 'Game in Java', description: 'An Arkanoid game built to explore the Java language.', story: { problem: 'I wanted to learn Java by building something real, not just following exercises.', solution: 'An Arkanoid game written in Java, with the classic paddle, ball and bricks.', result: 'Source code on GitHub.' } },
   ],
   articles: [
     {
@@ -493,9 +605,8 @@ const es: Content = {
   ],
   ui: {
     projects: 'Ver mi trabajo',
-    resume: 'CV',
     loading: 'Cargando',
-    preloaderSteps: ['Compilando software', 'Corriendo pruebas de calidad', 'Automatizando el deploy'],
+    resume: 'CV',
     readMore: 'Abrir',
     readArticle: 'Abrir enlace',
     prevArticle: 'Anterior',
@@ -523,8 +634,103 @@ const es: Content = {
     processTitle: 'Lo que hago',
     testimonialsLabel: '... /Testimonios ...',
     testimonialsTitle: 'Lo que dicen de mí',
-    labLabel: '... /Lab ...',
-    labConstellation: { title: 'Todo se conecta', lead: 'Cada herramienta que uso, unida a los roles donde hace su trabajo. *Pasa el cursor por una estrella* para seguir sus líneas.', hint: 'Pasa el cursor o toca una tecnología', roles: 'Roles', projects: 'Proyectos', none: 'Usada en trabajo con clientes' },
+    labLabel: '... /Beyond ...',
+    lab: {
+      bento: {
+        title: 'Más allá del código',
+        lead: 'Desde dónde trabajo, en qué estoy ahora y con qué construyo. *Arrastra el globo y el cubo.*',
+        globeTitle: 'México → el mundo',
+        globeText: 'Trabajo remoto, con equipos en distintas zonas horarias.',
+        cubeTitle: 'Stack técnico',
+        cubeText: 'herramientas en seis roles',
+        timeTitle: 'Hora local',
+        day: 'de día',
+        night: 'de noche',
+        ahead: 'adelante de ti',
+        behind: 'detrás de ti',
+        same: 'misma hora que tú',
+        nowTitle: 'Ahora mismo',
+        ghTitle: 'GitHub',
+        ghText: 'contribuciones personales desde',
+        ghNote: 'Solo mi cuenta personal. El trabajo para empresas y clientes vive en sus cuentas corporativas privadas de GitHub, por eso no aparece aquí.',
+        ghError: 'GitHub no responde en este momento.',
+        askTitle: 'Pregúntale a mi portafolio',
+        askText: 'Un asistente de IA que conoce mi trabajo. Elige una pregunta o haz la tuya.',
+        askOpen: 'Abrir el chat',
+      },
+      automate: {
+        title: 'Automatiza esto',
+        lead: 'Elige una tarea que todavía se hace a mano y mírala *competir contra su automatización*.',
+        manual: 'A mano',
+        auto: 'Automatizado',
+        run: 'Correr carrera',
+        again: 'Correr otra vez',
+        saved: 'ahorradas al mes',
+        perMonth: 'veces al mes',
+        note: 'Cifras típicas de mi trabajo con clientes; cada equipo es distinto.',
+        tasks: [
+          { id: 'report', name: 'Reporte semanal de ventas', manualMin: 95, autoSec: 42, runsPerMonth: 4, manual: ['Exportar CSV de 3 sistemas', 'Unirlos en Excel', 'Corregir formatos y duplicados', 'Armar las gráficas', 'Redactar el correo resumen', 'Enviarlo a 12 personas'], auto: [['Disparo programado', 'n8n'], ['Consulta SQL + API del CRM', 'Python'], ['Limpiar y unir', 'pandas'], ['Generar el PDF', 'Lambda'], ['Publicar en Slack + correo', 'Webhooks']] },
+          { id: 'qa', name: 'Prueba de regresión del checkout', manualMin: 180, autoSec: 210, runsPerMonth: 8, manual: ['Abrir el navegador e iniciar sesión', 'Agregar productos al carrito', 'Probar 6 métodos de pago', 'Revisar totales y correos', 'Repetir todo en móvil', 'Escribir el reporte de bugs'], auto: [['Se abre el pull request', 'GitHub Actions'], ['48 pruebas end-to-end', 'Playwright'], ['Pruebas de contrato de API', 'Postman'], ['Corrida en viewport móvil', 'Playwright'], ['Reporte + capturas en el PR', 'CI']] },
+          { id: 'triage', name: 'Clasificación de tickets de soporte', manualMin: 120, autoSec: 25, runsPerMonth: 22, manual: ['Leer cada ticket nuevo', 'Buscar al usuario en los logs', 'Adivinar la prioridad', 'Asignarlo a un equipo', 'Responder al cliente'], auto: [['Webhook de ticket nuevo', 'Zendesk'], ['Clasificar + prioridad', 'LLM + RAG'], ['Traer los logs del usuario', 'API de Datadog'], ['Enviar al equipo correcto', 'Jira'], ['Borrador de respuesta para revisar', 'MCP']] },
+        ],
+      },
+      mission: {
+        title: 'Centro de control',
+        lead: 'Mi actividad real en GitHub, *en vivo*. Nada de maquetas.',
+        live: 'En vivo',
+        activity: 'Actividad · últimos 12 meses',
+        feed: 'Últimos pushes',
+        languages: 'Lenguajes',
+        repos: 'repos públicos',
+        lastPush: 'último push',
+        pushed: 'push a',
+        loading: 'Conectando con GitHub…',
+        error: 'GitHub no responde en este momento.',
+        open: 'Abrir mi GitHub',
+        ago: ['ahora', 'min', 'h', 'd'],
+      },
+      plan: {
+        title: 'Arma tu proyecto',
+        lead: 'Marca lo que necesitas y obtén un *primer plan* en segundos: fases, stack y quién hace qué.',
+        ask: '¿Qué necesitas?',
+        empty: 'Elige al menos una opción para ver el plan.',
+        plan: 'Tu plan',
+        weeks: 'semanas',
+        week: 'Sem',
+        ongoing: 'continuo',
+        stack: 'Stack',
+        roles: 'Roles',
+        cta: 'Hablemos de esto',
+        note: 'Un punto de partida para conversar, no una cotización.',
+        kickoff: 'Descubrimiento y arquitectura',
+        handover: 'Lanzamiento y entrega',
+        needs: [
+          { id: 'web', label: 'Una app web o móvil', role: 'Software Engineer', stack: ['React', 'Node.js', 'TypeScript', 'AWS'], phases: [['Diseño y contratos de API', 1], ['Construir front end y back end', 3]] },
+          { id: 'qa', label: 'Pruebas automatizadas', role: 'Quality Assurance', stack: ['Playwright', 'Postman', 'GitHub Actions'], phases: [['Estrategia de pruebas y rutas críticas', 1], ['Suites E2E y de API en CI', 2]] },
+          { id: 'auto', label: 'Automatizaciones y agentes de IA', role: 'Automation Engineer', stack: ['n8n', 'Python', 'AWS Lambda', 'RAG'], phases: [['Mapear los flujos manuales', 1], ['Construir flujos y agentes', 2]] },
+          { id: 'support', label: 'Soporte de producción', role: 'Senior Product Engineer', stack: ['Datadog', 'CloudWatch', 'SQL'], phases: [['Observabilidad y runbooks', 1], ['Soporte L2/L3 y fixes de causa raíz', 0]] },
+        ],
+      },
+      incident: {
+        title: 'Incidente en vivo',
+        lead: 'Producción se cae a las 2 a.m. Así *lo llevo de la alerta al postmortem*.',
+        alert: 'ALERTA · el checkout devuelve 500',
+        resolved: 'Resuelto',
+        replay: 'Repetir incidente',
+        mttr: 'tiempo de resolución',
+        postmortem: 'Postmortem',
+        post: [['Causa raíz', 'La migración de ayer eliminó un índice en orders; las consultas del checkout esperaban bloqueos de fila.'], ['Fix', 'Índice reconstruido en concurrente, más reintentos con backoff en la llamada de pago.'], ['Prevención', 'Un check en CI que bloquea migraciones sin revisión de índices y una alerta sobre el tiempo de espera de bloqueos.']],
+        steps: [
+          { tool: 'Datadog', text: 'Errores 5xx del checkout suben 340%, p95 en 4.8 s', log: 'monitor: checkout.errors > threshold (02:14)' },
+          { tool: 'CloudWatch', text: 'El servicio de pagos está agotando el tiempo', log: 'TimeoutError: POST /pay exceeded 30000ms' },
+          { tool: 'Tracing', text: 'Cada request lenta espera a la base de datos', log: 'span db.orders.select_for_update 28.2s' },
+          { tool: 'SQL', text: 'Causa raíz: falta un índice tras una migración', log: 'EXPLAIN → Seq Scan on orders (rows=4.1M)' },
+          { tool: 'Hotfix', text: 'Reconstruir el índice, agregar reintento con backoff', log: 'CREATE INDEX CONCURRENTLY idx_orders_status…' },
+          { tool: 'Playwright', text: 'Suite del checkout en verde en staging', log: '48 passed (1.9m)' },
+          { tool: 'Deploy', text: 'Canary 10% → 100%, errores de vuelta a lo normal', log: 'rollout complete · 5xx 0.02%' },
+        ],
+      },
+    },
     contactLabel: '... /Contacto ...',
     contactTitle: ['Trabajemos', 'juntos'],
     contactText: 'Estoy abierto a colaborar en nuevos proyectos o simplemente a conversar sobre software, automatización y tecnología.',
@@ -601,14 +807,18 @@ const es: Content = {
     { ...projectsBase[4], summary: 'Landing page de agencia que presenta un perfil profesional.', metric: { value: 'Live', label: 'landing de agencia' }, story: { problem: 'Una agencia de software necesitaba una landing que presentara su perfil con credibilidad.', solution: 'Una landing en Next.js + TypeScript con secciones de servicios claras y una identidad visual fuerte.', result: 'En línea como la landing de la agencia.' } },
   ],
   archive: [
-    { ...archiveBase[0], tagline: 'Extensión de VS Code', description: 'Extensión de tareas para Visual Studio Code, disponible en el marketplace.' },
-    { ...archiveBase[1], tagline: 'La navaja suiza de Yalo', description: 'Herramienta interna del equipo de soporte para automatizar procesos y ejecutar requests a APIs.' },
-    { ...archiveBase[2], tagline: 'Blog full-stack', description: 'Blog MERN con operaciones CRUD y almacenamiento en AWS S3.' },
-    { ...archiveBase[3], tagline: 'Paquete de NPM', description: 'Generador de plantillas web personalizable como punto de partida para aplicaciones.' },
-    { ...archiveBase[4], tagline: 'App MERN full-stack', description: 'App de notas con CRUD y autenticación integrada.' },
-    { ...archiveBase[5], tagline: 'Biblioteca de documentación', description: 'Guarda recursos web como documentación técnica, assets y herramientas.' },
-    { ...archiveBase[6], tagline: 'Hecho en C', description: 'Proyecto escolar que simula el sistema interno de una tienda.' },
-    { ...archiveBase[7], tagline: 'Juego en Java', description: 'Un Arkanoid construido para explorar el lenguaje Java.' },
+    { ...archiveBase[8], tagline: 'Grabador de pantalla gratis', description: 'App web para grabar la pantalla, para quien no quiere pagar por una herramienta en línea.', story: { problem: 'Los grabadores de pantalla en línea esconden lo básico detrás de pagos, marcas de agua o registros.', solution: 'Un grabador de pantalla que corre por completo en el navegador, hecho con JavaScript, HTML y CSS.', result: 'Una utilidad gratuita, en línea en Vercel, para quien necesite grabar su pantalla.' } },
+    { ...archiveBase[9], tagline: 'Convertidor multimedia', description: 'Convierte imágenes, audio y video en el navegador, gratis y sin restricciones.', story: { problem: 'Convertir archivos suele implicar subirlos a sitios llenos de límites, anuncios o pagos.', solution: 'Un convertidor en línea de imágenes, audio y video, hecho con Next.js y Shadcn/ui sobre ffmpeg.', result: 'Conversión multimedia gratis y sin restricciones, en línea en Vercel.' } },
+    { ...archiveBase[0], tagline: 'Extensión de VS Code', description: 'Extensión de tareas para Visual Studio Code, disponible en el marketplace.', story: { problem: 'Las tareas pequeñas de código vivían en notas fuera del editor y se perdían.', solution: 'Una extensión para Visual Studio Code que mantiene la lista de pendientes dentro del editor, junto al código.', result: 'Publicada en el marketplace de VS Code, con instrucciones en GitHub.' } },
+    { ...archiveBase[1], tagline: 'La navaja suiza de Yalo', description: 'Herramienta interna del equipo de soporte para automatizar procesos y ejecutar requests a APIs.', story: { problem: 'El equipo de soporte de Yalo ejecutaba procesos repetitivos y requests a APIs a mano, ticket por ticket.', solution: 'Una herramienta interna en TypeScript, React y Ruby que automatiza esos procesos y ejecuta los requests desde un solo lugar.', result: 'La creé y la mantuve como la "navaja suiza" diaria del equipo de soporte.' } },
+    { ...archiveBase[2], tagline: 'Blog full-stack', description: 'Blog MERN con operaciones CRUD y almacenamiento en AWS S3.', story: { problem: 'Quería un blog con almacenamiento real de archivos, no solo subidas guardadas en el servidor.', solution: 'Un blog MERN con CRUD completo para artículos e imágenes almacenadas en AWS S3.', result: 'Código en GitHub; el despliegue está pendiente.' } },
+    { ...archiveBase[10], tagline: 'Canvas con Three.js', description: 'Un plano interactivo en Three.js animado con GSAP, pensado como componente hero.', story: { problem: 'Un hero estático rara vez deja una buena primera impresión.', solution: 'Un plano interactivo en Three.js animado con GSAP que reacciona mientras lo usas.', result: 'Un componente hero dinámico, en línea en Vercel.' } },
+    { ...archiveBase[11], tagline: 'Respuestas de correo con IA', description: 'Genera respuestas de correo personalizadas con IA, en distintos tonos de conversación.', story: { problem: 'Escribir una buena respuesta toma tiempo, y acertar con el tono, todavía más.', solution: 'Un backend en Spring Boot con un cliente en JavaScript que genera respuestas de correo personalizadas con IA, en distintos tonos.', result: 'El motor detrás de mi asistente de correo con IA; código en GitHub.' } },
+    { ...archiveBase[3], tagline: 'Paquete de NPM', description: 'Generador de plantillas web personalizable como punto de partida para aplicaciones.', story: { problem: 'Cada proyecto web nuevo empezaba reescribiendo el mismo código base.', solution: 'Un paquete de npm que genera una plantilla web limpia y personalizable como punto de partida.', result: 'Publicado en npm, listo para instalar.' } },
+    { ...archiveBase[4], tagline: 'App MERN full-stack', description: 'App de notas con CRUD y autenticación integrada.', story: { problem: 'Quería construir una app full-stack con autenticación real, de punta a punta.', solution: 'Una app de notas MERN con operaciones CRUD y autenticación con JWT y bcrypt.', result: 'En línea en Vercel.' } },
+    { ...archiveBase[5], tagline: 'Biblioteca de documentación', description: 'Guarda recursos web como documentación técnica, assets y herramientas.', story: { problem: 'La documentación, assets y herramientas que uso estaban dispersos entre marcadores y pestañas.', solution: 'Una biblioteca de documentación en React, Vite y Tailwind que organiza esos recursos en un solo lugar.', result: 'En línea en Vercel como mi referencia del día a día.' } },
+    { ...archiveBase[6], tagline: 'Hecho en C', description: 'Proyecto escolar que simula el sistema interno de una tienda.', story: { problem: 'Un proyecto escolar de programación: simular el sistema interno de una tienda.', solution: 'Un programa escrito en C que modela las operaciones internas de la tienda.', result: 'Se puede ejecutar en línea en OnlineGDB.' } },
+    { ...archiveBase[7], tagline: 'Juego en Java', description: 'Un Arkanoid construido para explorar el lenguaje Java.', story: { problem: 'Quería aprender Java construyendo algo real, no solo haciendo ejercicios.', solution: 'Un juego Arkanoid en Java, con la clásica paleta, pelota y ladrillos.', result: 'Código en GitHub.' } },
   ],
   articles: [
     {

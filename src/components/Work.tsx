@@ -58,7 +58,7 @@ export function Work() {
         ))}
       </ul>
 
-      <footer className="work__total">
+      <footer className="work__total" data-reveal>
         <span className="work__build">
           <span aria-hidden="true">✓</span> {t.ui.build}
         </span>

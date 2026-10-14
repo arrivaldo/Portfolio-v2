@@ -34,7 +34,7 @@ export function ContactForm() {
   }
 
   return (
-    <form className="contact-form" onSubmit={onSubmit}>
+    <form className="contact-form" onSubmit={onSubmit} data-reveal>
       <h3 className="contact-form__title">{f.title}</h3>
       <div className="contact-form__row">
         <label>

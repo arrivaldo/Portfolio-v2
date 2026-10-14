@@ -1,29 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { ContactShadows, Edges, OrbitControls, Sparkles } from '@react-three/drei'
 import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import * as THREE from 'three'
-import { prefersReducedMotion } from '../motion'
+import { prefersReducedMotion, useScrolling } from '../motion'
 
 /**
  * Ported from v1 (components/ui/TechCubeScene.tsx) and re-skinned with v2's system: monochrome materials
  * that follow the light/dark theme, the header's "E/" monogram on the faces, and the logo's iridescent
  * accent on the orbiting particles. It turns toward whichever corner card is hovered.
- * Loaded lazily — only ?svc=cube pulls three.js into the page.
+ * Loaded lazily; the Lab warms it offscreen after the intro (see warmScenes in LabDemos).
  */
 
 export type CubeFacePosition = 'tl' | 'tr' | 'bl' | 'br'
 type Theme = 'dark' | 'light'
 
 /** Same stops as the logo slash (Logo.tsx). */
-export const IRIDESCENT = ['#7ef0ff', '#c86cff', '#ff7ac8']
+/** Electric blue, the Lab's accent (the user asked for it on the cube and the globe, 2026-10-09). */
+export const ELECTRIC = ['#5ce1ff', '#1f7aff', '#2d4bff']
 
 /** Scene palette per theme, taken from the tokens in index.css. */
 const PALETTE = {
   dark: {
-    shell: '#141414',
-    edge: '#f1f1f1',
-    bracket: '#f1f1f1',
+    shell: '#0a0f1f',
+    edge: '#5ce1ff',
+    bracket: '#5ce1ff',
     bracketGlow: 0.7,
     ringOpacity: 0.2,
     platform: '#1a1a1a',
@@ -37,8 +38,8 @@ const PALETTE = {
   },
   light: {
     shell: '#f7f7f5',
-    edge: '#141414',
-    bracket: '#141414',
+    edge: '#1f7aff',
+    bracket: '#1f7aff',
     bracketGlow: 0,
     ringOpacity: 0.28,
     platform: '#e6e6e3',
@@ -91,7 +92,7 @@ function useMonogramTexture(p: Palette, theme: Theme) {
     const ctx = canvas.getContext('2d')!
     ctx.scale(512 / 44, 512 / 44)
     if (theme === 'dark') {
-      ctx.shadowColor = '#c86cff'
+      ctx.shadowColor = '#1f7aff'
       ctx.shadowBlur = 2
     }
     ctx.strokeStyle = p.ink
@@ -102,7 +103,7 @@ function useMonogramTexture(p: Palette, theme: Theme) {
     ctx.fillStyle = p.ink
     ctx.fill(new Path2D('M11 12h12v4h-8v4h7v4h-7v4h8v4H11z'))
     const grad = ctx.createLinearGradient(25.5, 32, 35.5, 12)
-    IRIDESCENT.forEach((c, i) => grad.addColorStop(i / 2, c))
+    ELECTRIC.forEach((c, i) => grad.addColorStop(i / 2, c))
     ctx.fillStyle = grad
     ctx.fill(new Path2D('M25.5 32l6-20h4l-6 20z'))
     const tex = new THREE.CanvasTexture(canvas)
@@ -200,7 +201,7 @@ function OrbitalRing({
           }}
         >
           <sphereGeometry args={[0.035, 12, 12]} />
-          <meshBasicMaterial color={IRIDESCENT[i % IRIDESCENT.length]} toneMapped={false} />
+          <meshBasicMaterial color={ELECTRIC[i % ELECTRIC.length]} toneMapped={false} />
         </mesh>
       ))}
     </group>
@@ -316,9 +317,22 @@ function AssemblyRig({
       <CoreCube activeFace={activeFace} spinTrigger={spinTrigger} p={p} theme={theme} still={still} />
       <OrbitalRing radius={2.0} rotation={[Math.PI / 2.4, 0, 0]} speed={0.3} p={p} particleCount={3} />
       <OrbitalRing radius={2.35} rotation={[Math.PI / 2.4, 0, 0]} speed={-0.2} p={p} particleCount={2} />
-      <ContactShadows position={[0, -1.36, 0]} opacity={p.shadow} scale={5} blur={2.4} far={2} color="#000000" />
+      <ContactShadows position={[0, -1.36, 0]} opacity={p.shadow} scale={5} blur={2.4} far={2} resolution={256} color="#000000" />
     </group>
   )
+}
+
+/**
+ * The Lab mounts the cube offscreen ahead of time with its loop paused; render one frame anyway so every shader
+ * (bloom included) compiles now rather than on the first visible frame.
+ */
+function Prewarm() {
+  const advance = useThree((s) => s.advance)
+  useEffect(() => {
+    const id = requestAnimationFrame(() => advance(performance.now()))
+    return () => cancelAnimationFrame(id)
+  }, [advance])
+  return null
 }
 
 export default function TechCubeScene({
@@ -336,12 +350,14 @@ export default function TechCubeScene({
   const theme = useDocTheme()
   const p = PALETTE[theme]
   const still = prefersReducedMotion()
+  // Holds still while the page scrolls, so the scroll gets the whole frame budget.
+  const scrolling = useScrolling()
 
   return (
     <Canvas
       camera={{ position: [6.0, 4.0, 7.6], fov: 30 }}
-      dpr={[1, 2]}
-      frameloop={active ? 'always' : 'never'}
+      dpr={[1, 1.5]}
+      frameloop={active && !scrolling ? 'always' : 'never'}
       gl={{ alpha: true, antialias: true }}
       style={{ touchAction: 'pan-y' }}
     >
@@ -362,7 +378,7 @@ export default function TechCubeScene({
       <directionalLight position={[-4, 2, -3]} intensity={0.35 * p.light} />
 
       <AssemblyRig revealed={revealed} activeFace={activeFace} spinTrigger={spinTrigger} p={p} theme={theme} still={still} />
-      {p.sparkles && !still && <Sparkles count={14} scale={3.4} size={1.2} speed={0.3} color="#c86cff" />}
+      {p.sparkles && !still && <Sparkles count={14} scale={3.4} size={1.2} speed={0.3} color="#5ce1ff" />}
 
       <OrbitControls
         enableZoom={false}
@@ -374,9 +390,10 @@ export default function TechCubeScene({
         maxPolarAngle={Math.PI / 1.85}
       />
 
+      <Prewarm />
       {p.bloom && (
         <EffectComposer multisampling={0} enableNormalPass={false}>
-          <Bloom intensity={0.25} luminanceThreshold={0.75} luminanceSmoothing={0.15} radius={0.15} />
+          <Bloom intensity={0.25} luminanceThreshold={0.75} luminanceSmoothing={0.15} radius={0.15} resolutionScale={0.5} />
         </EffectComposer>
       )}
     </Canvas>

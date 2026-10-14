@@ -45,12 +45,12 @@ export function Contact() {
         <SectionHead label={t.ui.contactLabel} title={t.ui.contactTitle.join(' ')} lead={<Rich text={t.ui.contactIntro} />} />
 
         <div className="contact__row">
-          <a href={`mailto:${profile.email}`} className="contact__cta" data-magnetic="0.3" data-cursor="Hi!">
+          <a href={`mailto:${profile.email}`} className="contact__cta" data-reveal data-magnetic="0.3" data-cursor="Hi!">
             <span>{t.ui.contactCta}</span>
             <ArrowUpRight size={28} />
           </a>
 
-          <div className="contact__info">
+          <div className="contact__info" data-reveal-stagger>
             <p className="contact__text">{t.ui.contactText}</p>
             <p className="contact__available">
               <span className="contact__dot" aria-hidden="true" />
@@ -84,7 +84,7 @@ export function Contact() {
         <ContactForm />
       </section>
 
-      <footer className="footer">
+      <footer className="footer" data-reveal-stagger>
         <span>
           © {new Date().getFullYear()} {profile.fullName}. {t.ui.rights}.
         </span>

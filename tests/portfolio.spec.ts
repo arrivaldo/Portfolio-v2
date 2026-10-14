@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test'
 
-/** Opens the site in a fixed language and waits for the preloader to finish. */
-async function open(page: Page, lang: 'en' | 'es' = 'en') {
+/** Opens the site in a fixed language and waits for the intro to unlock the page. */
+async function open(page: Page, lang: 'en' | 'es' = 'en', path = '/') {
   await page.addInitScript((l) => localStorage.setItem('lang', l), lang)
-  await page.goto('/')
+  await page.goto(path)
   await expect(page.locator('html')).not.toHaveClass(/is-loading/, { timeout: 15_000 })
 }
 
@@ -36,10 +36,27 @@ test.describe('portfolio', () => {
 
   test('opens and closes a case study', async ({ page }) => {
     await open(page)
-    await page.locator('.project__open').first().click()
-    const dialog = page.locator('dialog.case')
+    // The project cards stack as you scroll, so a pointer click on the first card's button could land on the card
+    // stacked over it (the old flakiness). Open it from the keyboard instead: no hit-testing, and it covers keyboard users.
+    await page.locator('.project__open').first().focus()
+    await page.keyboard.press('Enter')
+    // Projects and Archive each own a case-study dialog; target the open one.
+    const dialog = page.locator('dialog.case[open]')
     await expect(dialog).toBeVisible()
     await expect(dialog.locator('.case__steps li')).toHaveCount(3)
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+  })
+
+  test('archive rows open the case study too', async ({ page }) => {
+    await open(page)
+    const row = page.locator('.archive__row', { hasText: 'Heimdall' })
+    await row.scrollIntoViewIfNeeded()
+    await row.click()
+    const dialog = page.locator('dialog.case[open]')
+    await expect(dialog.locator('.case__title')).toHaveText('Heimdall')
+    await expect(dialog.locator('.case__steps li')).toHaveCount(3)
+    await expect(dialog.locator('.case__visit')).toHaveAttribute('href', 'https://heimdall.yalochat.com/')
     await page.keyboard.press('Escape')
     await expect(dialog).toBeHidden()
   })
@@ -56,17 +73,32 @@ test.describe('portfolio', () => {
     await expect(page.locator('.card--main .card__title')).toHaveText(title!)
   })
 
-  test('lab constellation shows a tech and its connections', async ({ page }) => {
+  test('lab automation race ends with hours saved', async ({ page }) => {
+    // Reduced motion finishes the race at once, so the test does not wait out the animation.
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await open(page, 'en', '/?lab=automate')
+    const lab = page.locator('.lab-auto')
+    await lab.scrollIntoViewIfNeeded()
+    await lab.locator('.lab-auto__tab').nth(1).click()
+    await expect(lab.locator('.lab-auto__tab').nth(1)).toHaveAttribute('aria-selected', 'true')
+    await expect(lab.locator('.lab-auto__result strong')).toHaveText(/^~\d+ h$/)
+  })
+
+  test('lab bento shows the GitHub graph and opens the chat', async ({ page }) => {
+    // The contributions proxy is stubbed so the test never depends on the network.
+    await page.route('https://github-contributions-api.jogruber.de/**', (route) =>
+      route.fulfill({ json: { total: {}, contributions: Array.from({ length: 7 }, (_, i) => ({ date: `2026-01-0${i + 4}`, count: i, level: i % 5 })) } }),
+    )
+    await page.route('**/api/chat', (route) => route.fulfill({ json: { answer: 'Mostly workflow automation.' } }))
     await open(page)
-    const star = page.locator('.lab-cosmos__map .lab-cosmos__star').first()
-    await star.scrollIntoViewIfNeeded()
-    await expect(page.locator('.lab-cosmos__hint')).toBeVisible()
-    // Park the pointer off the map so hovering another star can't steal the focus.
-    await page.mouse.move(0, 0)
-    await star.focus()
-    await expect(star).toHaveClass(/is-focus/)
-    await expect(page.locator('.lab-cosmos__info strong')).toHaveText((await star.locator('text').textContent())!)
-    await expect(page.locator('.lab-cosmos__info li').first()).toBeVisible()
+    const bento = page.locator('.lab-bento')
+    await bento.scrollIntoViewIfNeeded()
+    // One calendar per year (three years), seven stubbed days each.
+    await expect(bento.locator('.lab-bento__cal i[data-lvl]')).toHaveCount(21)
+    await expect(bento.locator('.lab-bento__clock strong')).toHaveText(/^\d{2}:\d{2}$/)
+    await bento.locator('.lab-bento__chips button').first().click()
+    await expect(page.locator('#chat-panel')).toHaveClass(/is-open/)
+    await expect(page.locator('#chat-panel')).toContainText('Mostly workflow automation.')
   })
 
   test('chat answers through /api/chat', async ({ page }) => {

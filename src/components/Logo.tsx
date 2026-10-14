@@ -3,8 +3,7 @@ import { gsap, prefersReducedMotion } from '../motion'
 
 /**
  * "E/" monogram (same mark as the v1 favicon): the E follows the theme, the slash carries the iridescent accent.
- * The slash draws itself in once the preloader is gone (or arrives drawn, handed over by the preloader)
- * and spins whenever the theme changes.
+ * The slash draws itself in once the page is ready and spins whenever the theme changes.
  */
 export function Logo({ size = 44 }: { size?: number }) {
   const id = useId().replace(/:/g, '')
@@ -23,12 +22,6 @@ export function Logo({ size = 44 }: { size?: number }) {
     const draw = () => {
       if (drawn || html.classList.contains('is-loading')) return
       drawn = true
-      // The preloader's mark just flew onto this spot fully drawn: take over without redrawing.
-      if (html.dataset.logoLanded) {
-        gsap.set(r, { strokeDashoffset: 0 })
-        gsap.set(s, { scaleY: 1 })
-        return
-      }
       gsap.timeline({ delay: 0.3 })
         .to(r, { strokeDashoffset: 0, duration: 1.2, ease: 'power2.inOut' })
         .to(s, { scaleY: 1, duration: 0.7, ease: 'expo.out' }, 0.5)

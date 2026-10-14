@@ -42,7 +42,7 @@ export function About() {
           ))}
         </div>
 
-        <div className="bento__tile bento__photo">
+        <div className="bento__tile bento__photo" data-reveal-img>
           <img className="about__photo" src="/profile.webp" alt={t.profile.fullName} />
           <span className="bento__now">
             <i aria-hidden="true" />

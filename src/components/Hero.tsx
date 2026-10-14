@@ -33,7 +33,7 @@ export function Hero() {
         <p className="hero__goal">
           <Rich text={t.profile.goal} />
         </p>
-        <p className="hero__title" aria-hidden="true">
+        <p className="hero__title" aria-hidden="true" data-intro-target>
           {t.profile.role[1]}
         </p>
       </div>
