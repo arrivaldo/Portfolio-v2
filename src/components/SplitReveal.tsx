@@ -20,7 +20,9 @@ export function SplitReveal({ text, as = 'h2', className }: Props) {
   }, [text])
 
   return (
-    <Tag ref={ref} className={`split ${className ?? ''}`} aria-label={text}>
+    <Tag ref={ref} className={`split ${className ?? ''}`}>
+      {/* Screen readers get the plain text; aria-label isn't allowed on a plain span, so it's real (hidden) text. */}
+      <span className="visually-hidden">{text}</span>
       {text.split(' ').map((word, i) => (
         <span key={`${word}-${i}`} className="split__mask" aria-hidden="true">
           <span className="split__word">

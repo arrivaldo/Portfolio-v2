@@ -53,7 +53,8 @@ export function Scramble({ text, as: Tag = 'span', className, play = true, hover
   }, [play, text])
 
   return (
-    <Tag className={className} aria-label={text} onMouseEnter={hover ? run : undefined}>
+    <Tag className={className} onMouseEnter={hover ? run : undefined}>
+      <span className="visually-hidden">{text}</span>
       <span ref={ref} aria-hidden="true" />
     </Tag>
   )

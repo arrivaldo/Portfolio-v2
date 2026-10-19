@@ -21,9 +21,12 @@ test.describe('portfolio', () => {
   test('switches language and keeps <html lang> in sync', async ({ page, isMobile }) => {
     await open(page, 'en')
     await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+    // On mobile the language switch lives in the menu.
+    if (isMobile) await page.getByRole('button', { name: 'Open menu' }).click()
     await page.getByRole('button', { name: 'Es', exact: true }).click()
     await expect(page.locator('html')).toHaveAttribute('lang', 'es')
-    if (!isMobile) await expect(page.locator('.nav')).toContainText('Proyectos')
+    if (isMobile) await expect(page.locator('#mobile-menu nav')).toContainText('Proyectos')
+    else await expect(page.locator('.nav')).toContainText('Proyectos')
   })
 
   test('toggles the theme', async ({ page }) => {
@@ -71,17 +74,6 @@ test.describe('portfolio', () => {
     await page.mouse.move(0, 0)
     await page.waitForTimeout(5_800)
     await expect(page.locator('.card--main .card__title')).toHaveText(title!)
-  })
-
-  test('lab automation race ends with hours saved', async ({ page }) => {
-    // Reduced motion finishes the race at once, so the test does not wait out the animation.
-    await page.emulateMedia({ reducedMotion: 'reduce' })
-    await open(page, 'en', '/?lab=automate')
-    const lab = page.locator('.lab-auto')
-    await lab.scrollIntoViewIfNeeded()
-    await lab.locator('.lab-auto__tab').nth(1).click()
-    await expect(lab.locator('.lab-auto__tab').nth(1)).toHaveAttribute('aria-selected', 'true')
-    await expect(lab.locator('.lab-auto__result strong')).toHaveText(/^~\d+ h$/)
   })
 
   test('lab bento shows the GitHub graph and opens the chat', async ({ page }) => {

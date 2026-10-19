@@ -1,7 +1,7 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { blockIn, charsIn, mediaIn } from './anim'
 
 gsap.registerPlugin(ScrollTrigger)
@@ -183,6 +183,39 @@ export function usePauseOffscreen() {
     document.querySelectorAll('main section, .footer').forEach((s) => io.observe(s))
     return () => io.disconnect()
   }, [])
+}
+
+/**
+ * v1's card spotlight (SpotlighBorder.js): while the pointer is over the container, every `cards` element gets its
+ * position in --mx/--my, so a radial glow on each card's border is centred on the pointer and neighbours catch its
+ * edge. Cards are looked up on every move, so ones that remount keep working. Pass `target` to reuse a ref the
+ * container already has. Styles live in projects.css.
+ */
+export function useSpotlight<T extends HTMLElement>(cards: string, target?: RefObject<T | null>) {
+  const own = useRef<T>(null)
+  const ref = target ?? own
+  useEffect(() => {
+    const box = ref.current
+    if (!box || !hasFinePointer() || prefersReducedMotion()) return
+    const onMove = (e: PointerEvent) => {
+      box.querySelectorAll<HTMLElement>(cards).forEach((card) => {
+        const r = card.getBoundingClientRect()
+        card.style.setProperty('--mx', `${e.clientX - r.left}px`)
+        card.style.setProperty('--my', `${e.clientY - r.top}px`)
+      })
+    }
+    const on = () => box.classList.add('is-lit')
+    const off = () => box.classList.remove('is-lit')
+    box.addEventListener('pointermove', onMove)
+    box.addEventListener('pointerenter', on)
+    box.addEventListener('pointerleave', off)
+    return () => {
+      box.removeEventListener('pointermove', onMove)
+      box.removeEventListener('pointerenter', on)
+      box.removeEventListener('pointerleave', off)
+    }
+  }, [cards, ref])
+  return ref
 }
 
 /** Elements with `data-magnetic` (optionally a strength, e.g. "0.5") pull toward the cursor. */

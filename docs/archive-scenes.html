@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<!--
+  Source of the Archive images (public/projects/archive-*.webp), in the Software Agency style: a low-poly space
+  scene (rock pedestal, ringed planet, floating rocks) with a themed 3D object on the left and a tilted device
+  showing the real project on the right. Open through the dev server (vite resolves `three`):
+  http://localhost:5173/docs/archive-scenes.html#arkanoid — window.render() returns a transparent webp data URL.
+  Screen sources live in docs/archive-shots/. The published files are resized to 1080×720 (webp, quality 76).
+-->
+<style>
+  html, body { margin: 0; background: #555; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<script type="module" src="./archive-scenes.js"></script>
+</body>
+</html>

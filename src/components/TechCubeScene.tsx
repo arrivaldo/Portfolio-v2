@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { ContactShadows, Edges, OrbitControls, Sparkles } from '@react-three/drei'
+import { Edges, OrbitControls, Sparkles } from '@react-three/drei'
 import { Bloom, EffectComposer } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import { prefersReducedMotion, useScrolling } from '../motion'
@@ -9,7 +9,7 @@ import { prefersReducedMotion, useScrolling } from '../motion'
  * Ported from v1 (components/ui/TechCubeScene.tsx) and re-skinned with v2's system: monochrome materials
  * that follow the light/dark theme, the header's "E/" monogram on the faces, and the logo's iridescent
  * accent on the orbiting particles. It turns toward whichever corner card is hovered.
- * Loaded lazily; the Lab warms it offscreen after the intro (see warmScenes in LabDemos).
+ * Loaded lazily; the Lab warms it offscreen after the intro (see warmScenes in LabBento).
  */
 
 export type CubeFacePosition = 'tl' | 'tr' | 'bl' | 'br'
@@ -218,6 +218,32 @@ function PlatformLayer({ y, size, height, p }: { y: number; size: number; height
   )
 }
 
+/**
+ * Soft shadow under the platform: a radial gradient on a plane. drei's ContactShadows looked the same here but
+ * re-rendered the whole scene from below (plus two blur passes) on every frame.
+ */
+function BlobShadow({ opacity }: { opacity: number }) {
+  const map = useMemo(() => {
+    const c = document.createElement('canvas')
+    c.width = c.height = 128
+    const x = c.getContext('2d')!
+    const g = x.createRadialGradient(64, 64, 0, 64, 64, 64)
+    g.addColorStop(0, 'rgba(0,0,0,1)')
+    g.addColorStop(0.45, 'rgba(0,0,0,0.55)')
+    g.addColorStop(1, 'rgba(0,0,0,0)')
+    x.fillStyle = g
+    x.fillRect(0, 0, 128, 128)
+    return new THREE.CanvasTexture(c)
+  }, [])
+  useEffect(() => () => map.dispose(), [map])
+  return (
+    <mesh position={[0, -1.36, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[4.6, 4.6]} />
+      <meshBasicMaterial map={map} transparent opacity={opacity} depthWrite={false} toneMapped={false} />
+    </mesh>
+  )
+}
+
 const SPIN_DURATION = 1.3
 
 function CoreCube({
@@ -317,7 +343,7 @@ function AssemblyRig({
       <CoreCube activeFace={activeFace} spinTrigger={spinTrigger} p={p} theme={theme} still={still} />
       <OrbitalRing radius={2.0} rotation={[Math.PI / 2.4, 0, 0]} speed={0.3} p={p} particleCount={3} />
       <OrbitalRing radius={2.35} rotation={[Math.PI / 2.4, 0, 0]} speed={-0.2} p={p} particleCount={2} />
-      <ContactShadows position={[0, -1.36, 0]} opacity={p.shadow} scale={5} blur={2.4} far={2} resolution={256} color="#000000" />
+      <BlobShadow opacity={p.shadow} />
     </group>
   )
 }

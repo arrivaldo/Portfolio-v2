@@ -44,8 +44,10 @@ export function Testimonials() {
   return (
     <section className="testimonials">
       <SectionHead label={t.ui.testimonialsLabel} title={t.ui.testimonialsTitle} lead={<Rich text={t.ui.testimonialsIntro} />} />
-      <Row items={t.testimonials.slice(0, half)} />
-      <Row items={t.testimonials.slice(half)} reverse />
+      <div className="testimonials__rows">
+        <Row items={t.testimonials.slice(0, half)} />
+        <Row items={t.testimonials.slice(half)} reverse />
+      </div>
     </section>
   )
 }

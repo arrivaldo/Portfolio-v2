@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { AmbientLight, BufferGeometry, Color, DirectionalLight, DoubleSide, Mesh, MeshLambertMaterial, PerspectiveCamera, PointLight, Scene, WebGLRenderer, type MeshPhongMaterial, type Object3D } from 'three'
-import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
+import { AmbientLight, CircleGeometry, Color, DirectionalLight, DoubleSide, InstancedMesh, Matrix4, MeshLambertMaterial, Object3D, PerspectiveCamera, PointLight, Scene, Vector3, WebGLRenderer, type MeshPhongMaterial } from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import ThreeGlobe from 'three-globe'
-import countriesUrl from '../assets/globe.json?url'
+import dotsUrl from '../assets/globe-dots.bin?url'
 import { V1_ARCS } from '../assets/globeArcs'
-import { isScrolling, prefersReducedMotion, quiet } from '../motion'
+import { isScrolling, prefersReducedMotion } from '../motion'
 
 // The hex-dot globe from portfolio v1 (components/ui/Globe.tsx + GridGlobe.tsx), rebuilt on plain three.js with
 // v1's arcs and settings as they were: same routes, colours, stroke, dash timing and pulsing rings. Navy globe in
@@ -15,6 +14,22 @@ const V1_COLORS = ['#06b6d4', '#3b82f6']
 const ARC_TIME = 1000
 const ARC_LENGTH = 0.9
 const CAMERA_Z = 300
+
+/** Home: every route below starts here (the caption reads "México → the world"). */
+const CDMX = { lat: 19.4326, lng: -99.1332 }
+/** Electric blue, the Lab's accent, so these routes read apart from v1's cyan/blue ones. */
+const HOME_COLOR = '#5ce1ff'
+/** Places my work has reached from Mexico City; the arcs leave CDMX one after another. */
+const HOME_ROUTES: [lat: number, lng: number, alt: number][] = [
+  [40.7128, -74.006, 0.25], // New York
+  [37.7749, -122.4194, 0.2], // San Francisco
+  [48.1351, 11.582, 0.45], // Munich
+  [40.4168, -3.7038, 0.4], // Madrid
+  [4.711, -74.0721, 0.2], // Bogotá
+  [-23.5505, -46.6333, 0.35], // São Paulo
+]
+/** Land dots: H3 resolution-3 cells (avg. edge 68.98 km) drawn at 30% of their size, as v1's hexPolygonMargin(0.7). */
+const DOT_RADIUS = (68.98 / 6371) * 100 * 0.3
 
 type Theme = 'light' | 'dark'
 
@@ -30,31 +45,35 @@ function useDocTheme(): Theme {
   return theme
 }
 
-/** Country polygons are fetched as a separate, cacheable asset instead of being bundled into the JS. */
 /**
- * three-globe draws the hex grid as one mesh — with its own material — per country: ~200 draw calls and shader
- * lookups every frame, which made the page stutter whenever the Lab was on screen. Once it has built them, fold
- * them into a single mesh with one material (same look) and hide the originals. Returns false until they exist.
+ * The land dots come precomputed (scripts/build-globe-dots.mjs) as Int16 [lat, lng] × 100 pairs, a small cacheable
+ * asset. They used to be built here from country polygons with h3-js — the long task that made the page stutter —
+ * and then drawn as ~200 meshes; now they are one instanced mesh, one draw call.
  */
-function mergeHexes(globe: Object3D, color: string, opacity: number) {
-  const parts: Mesh[] = []
-  globe.traverse((o) => {
-    if ((o as { __globeObjType?: string }).__globeObjType === 'hexPolygon' && (o as Mesh).geometry?.getAttribute('position')) parts.push(o as Mesh)
-  })
-  if (!parts.length) return false
-  const merged = new Mesh(
-    mergeGeometries(parts.map((m) => m.geometry as BufferGeometry)),
-    new MeshLambertMaterial({ color, opacity, transparent: opacity < 1, side: DoubleSide }),
-  )
-  parts[0].parent!.add(merged)
-  parts.forEach((m) => (m.visible = false))
-  return true
-}
+let dots: Promise<Int16Array> | null = null
+const loadDots = () => (dots ??= fetch(dotsUrl).then((r) => r.arrayBuffer()).then((b) => new Int16Array(b)))
+/** Lets the Lab fetch the dots ahead of time, together with this chunk. */
+export const preloadGlobeData = () => loadDots()
 
-let countries: Promise<{ features: object[] }> | null = null
-const loadCountries = () => (countries ??= fetch(countriesUrl).then((r) => r.json()))
-/** Lets the Lab fetch the country data ahead of time, together with this chunk. */
-export const preloadGlobeData = () => loadCountries()
+/** One flat hexagon per land cell, lying on the globe's surface. */
+function landDots(globe: ThreeGlobe, data: Int16Array, color: string, opacity: number) {
+  const count = data.length / 2
+  const mesh = new InstancedMesh(new CircleGeometry(DOT_RADIUS, 6), new MeshLambertMaterial({ color, opacity, transparent: opacity < 1, side: DoubleSide }), count)
+  const o = new Object3D()
+  const normal = new Vector3()
+  const m = new Matrix4()
+  for (let i = 0; i < count; i++) {
+    const { x, y, z } = globe.getCoords(data[i * 2] / 100, data[i * 2 + 1] / 100, 0.001)
+    o.position.set(x, y, z)
+    normal.set(x, y, z).multiplyScalar(2)
+    o.lookAt(normal)
+    o.updateMatrix()
+    m.copy(o.matrix)
+    mesh.setMatrixAt(i, m)
+  }
+  mesh.instanceMatrix.needsUpdate = true
+  return mesh
+}
 
 export default function LabGlobe({ active = true }: { active?: boolean }) {
   const host = useRef<HTMLDivElement>(null)
@@ -83,7 +102,11 @@ export default function LabGlobe({ active = true }: { active?: boolean }) {
     point.position.set(-200, 500, 200)
     scene.add(left, top, point)
 
-    const arcs = V1_ARCS.map(([order, startLat, startLng, endLat, endLng, arcAlt], i) => ({ order, startLat, startLng, endLat, endLng, arcAlt, color: V1_COLORS[i % 2] }))
+    const arcs = [
+      ...V1_ARCS.map(([order, startLat, startLng, endLat, endLng, arcAlt], i) => ({ order, startLat, startLng, endLat, endLng, arcAlt, color: V1_COLORS[i % 2] })),
+      // From home: staggered so a new line leaves CDMX every moment.
+      ...HOME_ROUTES.map(([endLat, endLng, arcAlt], i) => ({ order: i * 2.5, startLat: CDMX.lat, startLng: CDMX.lng, endLat, endLng, arcAlt, color: HOME_COLOR })),
+    ]
     // Ring sources: every distinct arc end, fading in its arc's colour (as in v1).
     const rgb = (hex: string) => [1, 3, 5].map((k) => parseInt(hex.slice(k, k + 2), 16)).join(', ')
     const ends = arcs
@@ -99,11 +122,11 @@ export default function LabGlobe({ active = true }: { active?: boolean }) {
       .arcsData(arcs)
       .arcColor('color')
       .arcAltitude('arcAlt')
-      .arcStroke(() => [0.32, 0.28, 0.3][Math.round(Math.random() * 2)])
       .arcDashLength(ARC_LENGTH)
       .arcDashInitialGap((d) => (d as { order: number }).order)
       .arcDashGap(15)
       .arcDashAnimateTime(still ? 0 : ARC_TIME)
+      .arcStroke((d) => ((d as { color: string }).color === HOME_COLOR ? 0.5 : [0.32, 0.28, 0.3][Math.round(Math.random() * 2)]))
       .ringColor((d: object) => (t: number) => `rgba(${rgb((d as { color: string }).color)}, ${1 - t})`)
       .ringMaxRadius(3)
       .ringPropagationSpeed(3)
@@ -114,36 +137,24 @@ export default function LabGlobe({ active = true }: { active?: boolean }) {
     material.emissiveIntensity = 0.1
     material.shininess = 0.9
     scene.add(globe)
-    // Building the hex grid and then merging it are the two long tasks here: each waits for a pause in the scroll.
-    let warm = 0
+    // Land dots: one instanced mesh from the precomputed cells, drawn once so its material compiles while offscreen.
     let alive = true
-    loadCountries().then(async (geo) => {
-      await quiet()
+    loadDots().then((data) => {
       if (!alive) return
-      globe
-        .hexPolygonsData(geo.features)
-        .hexPolygonResolution(3)
-        .hexPolygonMargin(0.7)
-        .hexPolygonsTransitionDuration(0)
-        .hexPolygonColor(() => (dark ? 'rgba(255,255,255,0.7)' : 'rgba(31,122,255,0.55)'))
-      // three-globe builds the layer asynchronously: wait for it, merge it, then draw once so the merged material
-      // compiles now, while the globe is still offscreen, rather than on its first visible frame.
-      let tries = 0
-      const settle = async () => {
-        await quiet()
-        if (!alive) return
-        if (mergeHexes(globe, dark ? '#ffffff' : '#1f7aff', dark ? 0.7 : 0.55) || ++tries > 40) renderer.render(scene, camera)
-        else warm = window.setTimeout(settle, 100)
-      }
-      warm = window.setTimeout(settle, 100)
+      globe.add(landDots(globe, data, dark ? '#ffffff' : '#1f7aff', dark ? 0.7 : 0.55))
+      renderer.render(scene, camera)
     })
     // Every 2 s a random ~80% of the arc ends pulse, like v1.
-    const pulse = () => globe.ringsData(ends.filter(() => Math.random() < 0.8))
+    // Home always pulses; the rest as in v1.
+    const home = { lat: CDMX.lat, lng: CDMX.lng, color: HOME_COLOR }
+    const pulse = () => globe.ringsData([home, ...ends.filter((p) => (p.lat !== CDMX.lat || p.lng !== CDMX.lng) && Math.random() < 0.8)])
     if (!still) pulse()
+    else globe.ringsData([home])
     const rings = still ? 0 : window.setInterval(pulse, 2000)
 
-    // Same start as v1: camera on +z, facing Europe and Africa, where most of the arcs fly.
-    camera.position.set(0, 0, CAMERA_Z)
+    // Start with Mexico in view, just left of centre, so the routes leaving CDMX show from the first frame.
+    const start = globe.getCoords(20, -78, 0)
+    camera.position.set(start.x, start.y, start.z).setLength(CAMERA_Z)
 
     const controls = new OrbitControls(camera, renderer.domElement)
     controls.enablePan = false
@@ -188,7 +199,6 @@ export default function LabGlobe({ active = true }: { active?: boolean }) {
       loop.current?.stop()
       loop.current = null
       clearInterval(rings)
-      clearTimeout(warm)
       alive = false
       ro.disconnect()
       controls.dispose()

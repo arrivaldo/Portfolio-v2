@@ -2,8 +2,9 @@ import gsap from 'gsap'
 
 /**
  * The page's motion language (editorial "mask", chosen 2026-10-11 over decode / blur / flip / sweep): letters rise
- * from behind their word's box, text blocks are uncovered bottom-up, and anything holding an image moves in whole —
- * images are never uncovered, blurred or scanned in, so they never look like they are still loading.
+ * from behind their word's box, and blocks slide in from the side of the screen they sit on ("sides", chosen
+ * 2026-10-18 over slide / flip / focus / down / zoom, after the bottom-up rise was dropped). Images are never
+ * uncovered, blurred or scanned in, so they never look like they are still loading.
  */
 
 /** Letter-level text entrance: titles, labels and the hero word. */
@@ -14,21 +15,25 @@ export function charsIn(chars: HTMLElement[], scale = 1) {
 const MEDIA = 'img, canvas, video, .glass, .lab-bento__scene' // the Lab scenes mount their canvas later
 const hasMedia = (el: Element) => el.matches(MEDIA) || el.querySelector(MEDIA) !== null
 
+/** Which edge a block is nearer to: -1 left half of the viewport, 1 right half. */
+const side = (el: Element) => {
+  const r = el.getBoundingClientRect()
+  return r.left + r.width / 2 < window.innerWidth / 2 ? -1 : 1
+}
+
 /**
- * Block entrance (cards, paragraphs, rows, buttons). Opacity, never visibility, so controls stay focusable.
- * Text blocks are uncovered bottom-up as they rise; blocks holding media enter whole (mediaIn).
+ * Block entrance (cards, paragraphs, rows, buttons): slides in from the nearer edge. Opacity, never visibility, so
+ * controls stay focusable. Blocks holding media use mediaIn.
  */
 export function blockIn(targets: gsap.TweenTarget, stagger = 0) {
   const all = gsap.utils.toArray<Element>(targets)
-  const text = all.filter((el) => !hasMedia(el))
   const tl = gsap.timeline()
-  if (text.length) tl.from(text, { clipPath: 'inset(100% 0% 0% 0%)', y: 50, duration: 1.2, stagger, ease: 'expo.out', clearProps: 'clipPath' }, 0)
-  // Keep the stagger order across both groups.
-  all.forEach((el, i) => hasMedia(el) && tl.add(mediaIn(el), i * stagger))
+  // Each block gets its own tween so it can measure its side; stagger keeps the original order.
+  all.forEach((el, i) => tl.add(hasMedia(el) ? mediaIn(el) : gsap.from(el, { opacity: 0, x: side(el) * 70, duration: 1.1, ease: 'power3.out' }), i * stagger))
   return tl
 }
 
-/** Media (an image, or a card/box holding one) rises in whole — no clip, blur or steps. */
+/** Media (an image, or a card/box holding one) slides in whole from the nearer edge — no clip, blur or steps. */
 export function mediaIn(el: Element) {
-  return gsap.timeline().from(el, { y: 70, opacity: 0, duration: 1.3, ease: 'expo.out' })
+  return gsap.timeline().from(el, { opacity: 0, x: side(el) * 90, duration: 1.3, ease: 'power3.out' })
 }

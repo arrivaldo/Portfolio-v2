@@ -1,7 +1,78 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useLang } from '../i18n'
+import { onIntro } from '../motion'
+import { ChatBubble } from './Icons'
 
 type Msg = { role: 'user' | 'model'; text: string; error?: boolean }
+
+const HINT_FOR = 7000 // how long it stays when nobody touches the page
+const HINT_IDLE = 6000 // quiet time before it comes back
+const HINT_LEAVE = 500 // matches the .is-leaving transition
+const DESKTOP = '(min-width: 861px)'
+
+type Hint = { phase: 'off' | 'on' | 'leaving'; round: number }
+
+/**
+ * Desktop only: an arrow and a line that draw themselves toward the chat button as soon as the preloader hands over,
+ * while the button pulses. Any scroll, click or key sends it away; after HINT_IDLE without activity it comes back
+ * and plays again (each round remounts it, so the animation restarts). Never while the chat is open.
+ */
+function useHint(open: boolean) {
+  const [hint, setHint] = useState<Hint>({ phase: 'off', round: 0 })
+  const openRef = useRef(open)
+  openRef.current = open
+  const hideRef = useRef<() => void>(() => {})
+
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP)
+    let started = false
+    let stay = 0
+    let idle = 0
+    let gone = 0
+    const later = (fn: () => void, ms: number) => window.setTimeout(fn, ms)
+
+    const show = () => {
+      if (!mq.matches || openRef.current) return wait()
+      clearTimeout(gone)
+      setHint((h) => ({ phase: 'on', round: h.round + 1 }))
+      stay = later(hide, HINT_FOR)
+    }
+    const hide = () => {
+      clearTimeout(stay)
+      setHint((h) => (h.phase === 'on' ? { ...h, phase: 'leaving' } : h))
+      gone = later(() => setHint((h) => (h.phase === 'leaving' ? { ...h, phase: 'off' } : h)), HINT_LEAVE)
+      wait()
+    }
+    // (Re)starts the quiet-time countdown before the next round.
+    const wait = () => {
+      clearTimeout(idle)
+      idle = later(show, HINT_IDLE)
+    }
+    hideRef.current = hide
+
+    const onActivity = () => {
+      if (!started) return
+      hide()
+    }
+    const events = ['scroll', 'wheel', 'pointerdown', 'keydown', 'touchstart'] as const
+    events.forEach((e) => window.addEventListener(e, onActivity, { passive: true, capture: true }))
+    onIntro(() => {
+      started = true
+      show()
+    })
+    return () => {
+      clearTimeout(stay)
+      clearTimeout(idle)
+      clearTimeout(gone)
+      events.forEach((e) => window.removeEventListener(e, onActivity, { capture: true }))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (open) hideRef.current()
+  }, [open])
+  return hint
+}
 
 /** "Ask my portfolio": an LLM assistant grounded in data.ts, served by /api/chat. */
 export function Chat() {
@@ -13,6 +84,7 @@ export function Chat() {
   const [busy, setBusy] = useState(false)
   const body = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLInputElement>(null)
+  const hint = useHint(open)
 
   useEffect(() => {
     body.current?.scrollTo({ top: body.current.scrollHeight, behavior: 'smooth' })
@@ -71,9 +143,26 @@ export function Chat() {
 
   return (
     <>
-      <button className={`chat-fab${open ? ' is-hidden' : ''}`} onClick={() => setOpen(true)} aria-expanded={open} aria-controls="chat-panel" data-magnetic="0.3">
+      {hint.phase !== 'off' && (
+        <div key={hint.round} className={`chat-hint is-${hint.phase}`} aria-hidden="true">
+          <span className="chat-hint__text">{c.hint}</span>
+          <svg className="chat-hint__arrow" viewBox="0 0 80 64">
+            <defs>
+              <linearGradient id="chat-hint-iri" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stopColor="#7ef0ff" />
+                <stop offset="50%" stopColor="#c86cff" />
+                <stop offset="100%" stopColor="#ff7ac8" />
+              </linearGradient>
+            </defs>
+            <path className="chat-hint__line" pathLength={1} d="M3 9 C 30 -1, 62 12, 69 55" />
+            <path className="chat-hint__head" pathLength={1} d="M58 47 L69 57 L75 43" />
+          </svg>
+        </div>
+      )}
+      <button className={`chat-fab${open ? ' is-hidden' : ''}${hint.phase === 'on' ? ' is-hinting' : ''}`} onClick={() => setOpen(true)} aria-expanded={open} aria-controls="chat-panel" data-magnetic="0.3">
         <span className="chat-fab__dot" aria-hidden="true" />
-        {c.open}
+        <ChatBubble className="chat-fab__icon" />
+        <span className="chat-fab__label">{c.open}</span>
       </button>
 
       <section id="chat-panel" className={`chat${open ? ' is-open' : ''}`} aria-label={c.title} aria-hidden={!open} data-lenis-prevent>

@@ -1,43 +1,11 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import type { Project } from '../data'
 import { Rich, useLang } from '../i18n'
 import { gsap, prefersReducedMotion } from '../motion'
-import { ArtCanvas } from './ArtCanvas'
 import { CaseStudy } from './CaseStudy'
 import { ArrowRight } from './Icons'
 import { ProjectProof } from './ProjectProof'
 import { SectionHead } from './SectionHead'
-
-/**
- * Live backdrops behind the project cut-outs. Pick with ?art=dots|liquid|ambient|ascii|warp|holo|classic.
- * dots: rippling dot field pushed away by the cursor. liquid: aurora blobs, one follows the cursor.
- * ambient: blurred, saturated, slowly turning copy of the image itself (YouTube ambient mode).
- * ascii: the image as code characters, scrambling under the cursor. warp: starfield that jumps to hyperspace on hover.
- * holo: holographic foil that shifts with the cursor angle, image tilts in 3D.
- * Product-shot presentations (CSS only):
- * reflect: studio light cone + mirror reflection on a glossy floor. poster (default, chosen 2026-10-07): solid project colour (arch removed).
- * glass: frosted glass pedestal over vivid blobs, image breaking out of it. sticker: white die-cut outline, tilted.
- * classic: the original glow + dot grid.
- */
-const ARTS = ['dots', 'liquid', 'ambient', 'ascii', 'warp', 'holo', 'reflect', 'poster', 'glass', 'sticker', 'classic'] as const
-const artParam = new URLSearchParams(window.location.search).get('art')
-const art = ARTS.find((a) => a === artParam) ?? 'poster'
-
-/** holo: cursor position (%) for the foil sheen and a small 3D tilt for the image. */
-function trackHolo(e: ReactPointerEvent<HTMLElement>) {
-  const el = e.currentTarget
-  const r = el.getBoundingClientRect()
-  const x = (e.clientX - r.left) / r.width
-  const y = (e.clientY - r.top) / r.height
-  el.style.setProperty('--mx', `${x * 100}%`)
-  el.style.setProperty('--my', `${y * 100}%`)
-  el.style.setProperty('--ry', `${(x - 0.5) * 14}deg`)
-  el.style.setProperty('--rx', `${(0.5 - y) * 10}deg`)
-}
-function resetHolo(e: ReactPointerEvent<HTMLElement>) {
-  e.currentTarget.style.setProperty('--ry', '0deg')
-  e.currentTarget.style.setProperty('--rx', '0deg')
-}
 
 /**
  * Recent projects as a sticky stack: each card pins near the top and the next one
@@ -73,29 +41,22 @@ export function Projects() {
       <div className="projects__list" ref={list}>
         {t.projects.map((p, i) => (
           <article key={p.id} className="project" style={{ '--i': i, '--glow': p.glow } as CSSProperties}>
-            <div
-              className={`project__art project__art--${art}`}
-              data-reveal-img
-              onPointerMove={art === 'holo' ? trackHolo : undefined}
-              onPointerLeave={art === 'holo' ? resetHolo : undefined}
-            >
-              {(art === 'dots' || art === 'liquid' || art === 'ascii' || art === 'warp') && (
-                <ArtCanvas mode={art} color={p.glow} image={p.image} />
-              )}
-              {art === 'holo' && <span className="art-holo" aria-hidden="true" />}
-              {art === 'ambient' && <img className="art-ambient" src={p.image} alt="" aria-hidden="true" />}
+            <div className="project__art project__art--poster" data-reveal-img>
               <img src={p.image} alt={p.title} loading="lazy" decoding="async" />
               <span className="project__index">{String(i + 1).padStart(2, '0')}</span>
             </div>
             <div className="project__body" data-reveal-stagger>
+              {p.client && (
+                <p className="project__client">
+                  <span>{t.ui.clientWork}</span> via {p.client.via} · {p.client.role} · {p.client.period}
+                </p>
+              )}
               <h3 className="project__title">{p.title}</h3>
               <p className="project__summary">{p.summary}</p>
               <div className="project__metric">
-                <p>
-                  <strong>{p.metric.value}</strong>
-                  {p.metric.label}
-                </p>
+                <strong>{p.metric.value}</strong>
                 <ProjectProof project={p} />
+                <p>{p.metric.label}</p>
               </div>
               <div className="project__foot">
                 <ul className="project__stack">

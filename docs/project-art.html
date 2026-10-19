@@ -1,0 +1,379 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<!--
+  Source of the featured project images (public/projects/art-*.webp). Same visual language as the Claro 360
+  mockup the user liked: light devices, big simple shapes, almost no text, one dark accent card.
+  Render: open with #<id> (email, incidents, yalo, apesa, munich, claro) at 700×520, DPR 2, transparent background.
+-->
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: transparent; width: 700px; height: 520px; overflow: hidden; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; color: #1b2130; }
+  .scene { position: relative; width: 600px; height: 420px; margin: 50px; display: none; }
+  .scene.on { display: block; }
+  .abs { position: absolute; }
+
+  /* Devices: dark bezel, white screen (as in the Claro mockup). */
+  .dev { position: absolute; padding: 8px; border-radius: 14px; background: #0b0e14; box-shadow: 0 34px 60px -10px rgba(0,0,0,.45), inset 0 0 0 1px rgba(255,255,255,.07); }
+  .dev.phone { padding: 6px; border-radius: 24px; }
+  .dev.phone::before { content: ''; position: absolute; top: 11px; left: 50%; z-index: 2; width: 34px; height: 8px; margin-left: -17px; border-radius: 99px; background: #0b0e14; }
+  .page { position: relative; width: 100%; height: 100%; overflow: hidden; border-radius: 7px; background: #fff; }
+  .phone .page { border-radius: 19px; }
+
+  /* Accent cards */
+  .dark { position: absolute; border-radius: 16px; background: #121722; border: 1px solid rgba(255,255,255,.08); box-shadow: 0 24px 44px -8px rgba(0,0,0,.45); color: #e8ecf4; }
+  .light { position: absolute; border-radius: 16px; background: #fff; box-shadow: 0 24px 44px -8px rgba(0,0,0,.32); }
+  .lbl { font-size: 9.5px; color: #8a93a6; text-align: center; }
+
+  /* Placeholder text bars */
+  .ln { display: block; height: 7px; border-radius: 4px; background: #e3e6ee; }
+  .ln.d { background: #1b2130; height: 9px; }
+  .ln.s { height: 5px; background: #eceef3; }
+  .row { display: flex; align-items: center; gap: 8px; }
+  .col { display: flex; flex-direction: column; gap: 6px; }
+  .pill { display: inline-block; height: 14px; border-radius: 99px; }
+  .chk { display: grid; place-items: center; flex: none; width: 16px; height: 16px; border-radius: 50%; background: #3ddc84; color: #0b2416; font-size: 9px; font-weight: 800; }
+
+  /* ===== Email (improved v1 illustration) ===== */
+  /* Email: the robot "speaks" the AI reply (option C, picked by the user). */
+  #email .robot { position: absolute; left: 18px; top: 22px; width: 582px; filter: drop-shadow(0 26px 30px rgba(36, 20, 110, .35)); }
+  #email .bubble { left: 300px; top: 4px; width: 190px; padding: 12px 14px; border-radius: 16px 16px 16px 4px; }
+  #email .bubble::after { content: ''; position: absolute; left: 22px; bottom: -9px; width: 18px; height: 18px; background: #fff; clip-path: polygon(0 0, 100% 0, 0 100%); }
+  .bubble .row { margin-bottom: 9px; }
+  .spark { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, #b4a8ff, #6b58ff); color: #fff; font-size: 13px; }
+  .bubble .spark { width: 20px; height: 20px; font-size: 10px; border-radius: 6px; }
+  .bubble .ln { height: 7px; background: #d9d5ec; }
+  .typing { display: flex; gap: 4px; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: #b4a8ff; }
+  .typing i:nth-child(2) { opacity: .7; } .typing i:nth-child(3) { opacity: .4; }
+
+  /* ===== Claro 360 (improved: same layout, richer pages) ===== */
+  #claro .desk { left: 14px; top: 20px; width: 400px; height: 262px; }
+  #claro .tab { left: 330px; top: 120px; width: 170px; height: 230px; border-radius: 16px; }
+  #claro .ph { left: 470px; top: 170px; width: 108px; height: 214px; }
+  .nav { display: flex; align-items: center; gap: 6px; height: 20px; padding: 0 9px; border-bottom: 2px solid #ff5a5a; }
+  .nav b { width: 9px; height: 9px; border-radius: 50%; background: #ff5a5a; }
+  .nav i { width: 20px; height: 4px; border-radius: 2px; background: #d7dbe4; }
+  .nav u { width: 30px; height: 9px; margin-left: auto; border-radius: 99px; background: #1b2130; }
+  .hero2 { display: grid; grid-template-columns: 1.1fr 1fr; gap: 12px; align-items: center; padding: 16px 14px 10px; }
+  .hero2 .ln.d { height: 11px; margin-bottom: 6px; }
+  .hero2 .cta { display: block; width: 58px; height: 13px; margin-top: 10px; border-radius: 99px; background: #ff5a5a; }
+  .shot { position: relative; height: 82px; overflow: hidden; border-radius: 10px; background: linear-gradient(140deg, #ff8c8c, #ff3d3d 60%, #d81f2b); }
+  .shot::before { content: ''; position: absolute; right: -14px; top: -18px; width: 70px; height: 70px; border-radius: 50%; background: rgba(255,255,255,.25); }
+  .shot::after { content: ''; position: absolute; left: 12px; bottom: 12px; width: 44px; height: 30px; border-radius: 7px; background: rgba(255,255,255,.9); box-shadow: 18px -10px 0 -4px rgba(255,255,255,.45); }
+  .feat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 6px 14px; }
+  .feat > div { padding: 9px; border-radius: 8px; background: linear-gradient(160deg, #ffecec, #f4f5f9); }
+  .feat em { display: block; width: 16px; height: 16px; margin-bottom: 7px; border-radius: 5px; background: #ff5a5a; opacity: .85; }
+  .feat .ln { height: 5px; margin-top: 4px; background: #e4d6d9; }
+  .tab .hero2, .ph .hero2 { grid-template-columns: 1fr; text-align: center; }
+  .tab .hero2 .cta, .ph .hero2 .cta { margin: 9px auto 0; }
+  .tab .hero2 .ln, .ph .hero2 .ln { margin-left: auto; margin-right: auto; }
+  .tab .shot { height: 60px; } .ph .shot { height: 46px; }
+  .tab .feat { grid-template-columns: repeat(2, 1fr); }
+  .ph .feat { grid-template-columns: 1fr; gap: 6px; } .ph .feat > div { padding: 7px; } .ph .feat em { display: none; }
+  .ph .hero2 { padding: 22px 9px 8px; gap: 8px; }
+  .lh { left: 34px; top: 300px; display: flex; gap: 16px; padding: 13px 18px; }
+  .ring { position: relative; font-size: 9px; color: #8a93a6; text-align: center; }
+  .ring svg { display: block; margin: 0 auto 5px; }
+  .ring svg + i { position: absolute; top: 12px; left: 50%; width: 16px; height: 16px; margin-left: -8px; color: #3ddc84; font-style: normal; font-size: 12px; font-weight: 700; line-height: 16px; }
+
+  /* ===== Incidents: fleet dashboard + mobile alert + status donut ===== */
+  #incidents .desk { left: 6px; top: 8px; width: 432px; height: 284px; }
+  .app { display: grid; grid-template-columns: 38px 1fr; height: 100%; }
+  .side { display: flex; flex-direction: column; align-items: center; gap: 12px; padding-top: 12px; background: #0f2a33; }
+  .side i { width: 16px; height: 16px; border-radius: 5px; background: #2a4a55; }
+  .side i:first-child { background: #22c3e6; border-radius: 50%; }
+  .side i:nth-child(2) { background: #5fd5ee; }
+  .main { padding: 12px; background: #f5f8fa; }
+  .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+  .kpi { padding: 9px 10px; border-radius: 9px; background: #fff; box-shadow: 0 1px 0 #e6eaef; }
+  .kpi i { display: block; width: 8px; height: 8px; margin-bottom: 7px; border-radius: 50%; }
+  .kpi b { display: block; width: 34px; height: 12px; margin-bottom: 5px; border-radius: 3px; background: #1b2130; }
+  .split { display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; }
+  .map { position: relative; height: 176px; overflow: hidden; border-radius: 10px; background: #e3eef2; }
+  .map svg { position: absolute; inset: 0; }
+  .pin { position: absolute; width: 14px; height: 14px; border: 3px solid #fff; border-radius: 50%; box-shadow: 0 3px 8px rgba(0,0,0,.25); }
+  .pin::after { content: ''; position: absolute; inset: -9px; border-radius: 50%; background: currentColor; opacity: .18; }
+  .list { display: flex; flex-direction: column; gap: 7px; }
+  .item { display: flex; align-items: center; gap: 7px; padding: 8px; border-radius: 9px; background: #fff; box-shadow: 0 1px 0 #e6eaef; }
+  .item > i { flex: none; width: 20px; height: 20px; border-radius: 6px; background: #dff5fb; }
+  .item .col { flex: 1; gap: 4px; }
+  .item .pill { width: 30px; height: 11px; }
+  #incidents .phone { left: 446px; top: 92px; width: 138px; height: 276px; }
+  .alert { padding: 26px 10px 10px; }
+  .alert .head { height: 64px; margin: -26px -10px 10px; padding: 30px 10px 0; background: linear-gradient(135deg, #22c3e6, #1592b0); }
+  .alert .head .ln { background: rgba(255,255,255,.85); width: 60%; }
+  .alert .mini { height: 62px; margin-bottom: 10px; overflow: hidden; border-radius: 10px; background: #e3eef2; position: relative; }
+  .alert .btn { display: block; height: 22px; margin-top: 12px; border-radius: 99px; background: #22c3e6; }
+  .alert .who { display: flex; margin-top: 10px; }
+  .alert .who i { width: 18px; height: 18px; margin-right: -5px; border: 2px solid #fff; border-radius: 50%; }
+  #incidents .donut { left: 22px; top: 306px; display: flex; align-items: center; gap: 16px; padding: 12px 18px 12px 14px; }
+  .legend { display: flex; flex-direction: column; gap: 7px; font-size: 9.5px; color: #a6aec0; }
+  .legend span { display: flex; align-items: center; gap: 7px; }
+  .legend i { width: 8px; height: 8px; border-radius: 2px; }
+
+  /* ===== Yalo: WhatsApp agent + tool graph + voice ===== */
+  #yalo .phone { left: 34px; top: 0; width: 196px; height: 412px; }
+  .wa { display: flex; flex-direction: column; height: 100%; background: #efeae2; }
+  .wa-top { display: flex; align-items: center; gap: 8px; padding: 26px 10px 10px; background: #1f2c34; }
+  .wa-top b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: linear-gradient(135deg, #ffc94a, #ff8a1f); color: #fff; font-size: 12px; }
+  .wa-top .ln { width: 64px; background: rgba(255,255,255,.85); }
+  .wa-top .ln.s { width: 34px; margin-top: 5px; background: #7fd99c; }
+  .msgs { display: flex; flex: 1; flex-direction: column; gap: 8px; padding: 12px 10px; }
+  .msg { max-width: 82%; padding: 8px 9px; border-radius: 10px 10px 10px 3px; background: #fff; box-shadow: 0 1px 1px rgba(0,0,0,.08); }
+  .msg.me { align-self: flex-end; border-radius: 10px 10px 3px 10px; background: #d9fdd3; }
+  .msg .ln { height: 6px; background: #d5d9e0; }
+  .msg.me .ln { background: #a8dca0; }
+  .msg .ln + .ln { margin-top: 5px; }
+  .voice { display: flex; align-items: center; gap: 6px; }
+  .voice b { flex: none; width: 0; height: 0; border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 9px solid #3b8a3e; }
+  .wave { display: flex; align-items: center; gap: 2px; height: 20px; }
+  .wave i { width: 3px; border-radius: 2px; background: #3b8a3e; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
+  .chips span { width: 52px; height: 18px; border: 1.5px solid #25a35a; border-radius: 99px; background: #fff; }
+  .wa-in { display: flex; gap: 6px; padding: 8px; }
+  .wa-in i { flex: 1; height: 26px; border-radius: 99px; background: #fff; }
+  .wa-in b { width: 26px; height: 26px; border-radius: 50%; background: #25a35a; }
+  #yalo .graph { left: 258px; top: 44px; width: 330px; height: 214px; }
+  .node { position: absolute; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #1d2433; border: 1px solid rgba(255,255,255,.1); }
+  .node svg { width: 20px; height: 20px; fill: none; stroke: #c9d1e0; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .node .chk { position: absolute; right: -3px; bottom: -3px; width: 15px; height: 15px; font-size: 8px; border: 2px solid #121722; }
+  .node + .lbl { position: absolute; width: 70px; margin-left: -13px; }
+  .core { width: 66px; height: 66px; background: linear-gradient(135deg, #ffc94a, #ff8a1f); border: 0; box-shadow: 0 0 0 8px rgba(255,176,32,.14), 0 0 30px rgba(255,176,32,.35); color: #fff; font-size: 26px; }
+  #yalo .vcard { left: 290px; top: 286px; display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+  .mic { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #ffc94a, #ff8a1f); }
+  .mic svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; }
+  .vcard .wave i { width: 4px; background: #ffb020; }
+
+  /* ===== APESA: test report + pipeline + team ===== */
+  #apesa .desk { left: 4px; top: 6px; width: 440px; height: 282px; }
+  .rep { height: 100%; padding: 12px 14px; background: #f5f8f6; }
+  .rep-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .rep-top b { width: 18px; height: 18px; border-radius: 6px; background: #3ddc84; }
+  .rep-top .pill { width: 54px; height: 16px; margin-left: auto; background: #d5f7e3; }
+  .rep-grid { display: grid; grid-template-columns: 136px 1fr; gap: 10px; }
+  .tile { padding: 12px; border-radius: 10px; background: #fff; box-shadow: 0 1px 0 #e3e9e5; }
+  .big-ring { position: relative; width: 92px; height: 92px; margin: 2px auto 10px; }
+  .big-ring b { position: absolute; inset: 0; display: grid; place-items: center; color: #22b866; font-size: 30px; }
+  .runs { display: flex; align-items: flex-end; gap: 6px; height: 92px; padding-top: 6px; }
+  .runs i { flex: 1; border-radius: 4px 4px 1px 1px; background: #3ddc84; }
+  .runs i.m { background: #d4dbd7; }
+  .suites { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+  .suite { display: flex; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 8px; background: #fff; box-shadow: 0 1px 0 #e3e9e5; }
+  .suite .ln { flex: 1; }
+  .suite .ln.s { flex: none; width: 34px; background: #d5f7e3; height: 7px; }
+  #apesa .pipe { left: 18px; top: 304px; display: flex; align-items: flex-start; gap: 0; padding: 14px 20px 12px; }
+  .stage { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 64px; }
+  .stage > b { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: rgba(61,220,132,.14); border: 2px solid #3ddc84; }
+  .stage svg { width: 18px; height: 18px; fill: none; stroke: #3ddc84; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .link { width: 34px; height: 2px; margin-top: 19px; background: #3ddc84; }
+  #apesa .team { left: 456px; top: 150px; width: 138px; padding: 14px; }
+  .team .ln.d { width: 70%; height: 8px; margin-bottom: 12px; }
+  .faces { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+  .faces i { position: relative; width: 22px; height: 22px; border-radius: 50%; }
+  .faces i::after { content: ''; position: absolute; right: -2px; bottom: -2px; width: 8px; height: 8px; border: 2px solid #fff; border-radius: 50%; background: #3ddc84; }
+
+  /* ===== Munich Re: Pega case board + environments shield + policy ===== */
+  #munich .desk { left: 4px; top: 6px; width: 444px; height: 282px; }
+  .pega { height: 100%; background: #f4f6fb; }
+  .pega-top { display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; background: #142a66; }
+  .pega-top b { width: 16px; height: 16px; border-radius: 4px; background: #4d7cff; }
+  .pega-top .ln { width: 60px; background: rgba(255,255,255,.6); height: 6px; }
+  .pega-top i { width: 18px; height: 18px; margin-left: auto; border-radius: 50%; background: #8fb0ff; }
+  .chev { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3px; padding: 12px 12px 8px; }
+  .chev span { height: 22px; clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 50%, calc(100% - 9px) 100%, 0 100%, 9px 50%); background: #4d7cff; }
+  .chev span:nth-child(3) { background: #9db7ff; } .chev span:nth-child(4) { background: #dde5f7; }
+  .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 2px 12px; }
+  .lane { display: flex; flex-direction: column; gap: 7px; }
+  .case { padding: 8px; border-left: 3px solid #4d7cff; border-radius: 7px; background: #fff; box-shadow: 0 1px 0 #e3e7f0; }
+  .case .ln { height: 5px; } .case .ln + .ln { margin-top: 5px; width: 60%; }
+  .case .row { justify-content: space-between; margin-top: 7px; }
+  .case .row i { width: 12px; height: 12px; border-radius: 50%; background: #c9d6ff; }
+  .case .row .pill { width: 22px; height: 8px; background: #e5ecff; }
+  .case.hot { border-left-color: #ffb020; box-shadow: 0 0 0 2px #4d7cff, 0 10px 18px -6px rgba(77,124,255,.45); transform: translateY(-3px); }
+  .case.done { border-left-color: #3ddc84; }
+  #munich .envs { left: 410px; top: 168px; width: 184px; padding: 16px; }
+  .shield { display: grid; place-items: center; width: 50px; height: 56px; margin: 0 auto 14px; clip-path: polygon(50% 0, 100% 16%, 100% 52%, 50% 100%, 0 52%, 0 16%); background: linear-gradient(160deg, #8fb0ff, #2d55d6); color: #fff; font-size: 22px; font-weight: 800; }
+  .env { display: flex; align-items: center; gap: 9px; padding: 7px 9px; border-radius: 9px; background: #1d2433; font-size: 10px; font-weight: 700; letter-spacing: .06em; }
+  .env + .env { margin-top: 6px; }
+  .env .ln { flex: 1; height: 5px; background: rgba(61,220,132,.35); }
+  #munich .policy { left: 26px; top: 304px; display: flex; align-items: center; gap: 14px; width: 250px; padding: 14px 16px; }
+  .doc { position: relative; flex: none; width: 40px; height: 50px; border-radius: 6px; background: #e5ecff; box-shadow: 5px -5px 0 -1px #c9d6ff; }
+  .doc::after { content: ''; position: absolute; left: 8px; right: 8px; top: 12px; height: 22px; background: repeating-linear-gradient(#4d7cff 0 3px, transparent 3px 8px); opacity: .6; }
+  .policy .col { flex: 1; gap: 7px; }
+  .policy .pill { width: 62px; height: 16px; background: #d5f7e3; }
+</style>
+</head>
+<body>
+
+<!-- ============ Email ============ -->
+<section class="scene" id="email"><img class="robot" src="../design/ai-email-robot@2x.png" alt="" />
+  <div class="light bubble"><div class="row"><span class="spark">✦</span><span class="typing"><i></i><i></i><i></i></span></div>
+    <div class="col"><span class="ln" style="width:100%"></span><span class="ln" style="width:86%"></span><span class="ln" style="width:52%"></span></div></div>
+</section>
+
+
+
+<!-- ============ Claro 360 ============ -->
+<section class="scene" id="claro">
+  <div class="dev desk"><div class="page">
+    <div class="nav"><b></b><i></i><i></i><i></i><u></u></div>
+    <div class="hero2"><div><span class="ln d" style="width:92%"></span><span class="ln d" style="width:70%"></span><span class="ln s" style="width:80%;margin-top:9px"></span><span class="cta"></span></div><div class="shot"></div></div>
+    <div class="feat"><div><em></em><span class="ln"></span><span class="ln" style="width:60%"></span></div><div><em></em><span class="ln"></span><span class="ln" style="width:60%"></span></div><div><em></em><span class="ln"></span><span class="ln" style="width:60%"></span></div></div>
+  </div></div>
+  <div class="dev tab"><div class="page">
+    <div class="nav"><b></b><i></i><u></u></div>
+    <div class="hero2"><div><span class="ln d" style="width:86%"></span><span class="ln s" style="width:64%;margin-top:6px"></span><span class="cta"></span></div><div class="shot"></div></div>
+    <div class="feat"><div><em></em><span class="ln"></span></div><div><em></em><span class="ln"></span></div></div>
+  </div></div>
+  <div class="dev phone ph"><div class="page">
+    <div class="hero2"><div><span class="ln d" style="width:80%"></span><span class="ln s" style="width:60%;margin-top:5px"></span><span class="cta" style="width:44px"></span></div><div class="shot"></div></div>
+    <div class="feat"><div><span class="ln"></span></div><div><span class="ln"></span></div></div>
+  </div></div>
+  <div class="dark lh">
+    <div class="ring"><svg width="42" height="42" viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="#1f3a2a" stroke-width="4"/><circle cx="21" cy="21" r="17" fill="none" stroke="#3ddc84" stroke-width="4" stroke-dasharray="102 107" transform="rotate(-90 21 21)" stroke-linecap="round"/></svg><i>⚡</i>Performance</div>
+    <div class="ring"><svg width="42" height="42" viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="#1f3a2a" stroke-width="4"/><circle cx="21" cy="21" r="17" fill="none" stroke="#3ddc84" stroke-width="4" stroke-dasharray="105 107" transform="rotate(-90 21 21)" stroke-linecap="round"/></svg><i>⌕</i>SEO</div>
+    <div class="ring"><svg width="42" height="42" viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="#1f3a2a" stroke-width="4"/><circle cx="21" cy="21" r="17" fill="none" stroke="#3ddc84" stroke-width="4" stroke-dasharray="99 107" transform="rotate(-90 21 21)" stroke-linecap="round"/></svg><i>✓</i>Accessibility</div>
+  </div>
+</section>
+
+<!-- ============ Incidents ============ -->
+<section class="scene" id="incidents">
+  <div class="dev desk"><div class="page app">
+    <div class="side"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="main">
+      <div class="kpis">
+        <div class="kpi"><i style="background:#ffb020"></i><b></b><span class="ln s" style="width:70%"></span></div>
+        <div class="kpi"><i style="background:#4d9bff"></i><b></b><span class="ln s" style="width:70%"></span></div>
+        <div class="kpi"><i style="background:#3ddc84"></i><b></b><span class="ln s" style="width:70%"></span></div>
+      </div>
+      <div class="split">
+        <div class="map">
+          <svg viewBox="0 0 220 176" preserveAspectRatio="none"><path d="M-10 130 C 50 120, 70 60, 130 70 S 210 30, 240 20" stroke="#fff" stroke-width="9" fill="none"/><path d="M40 -10 C 60 60, 30 120, 80 190" stroke="#fff" stroke-width="7" fill="none"/><path d="M150 190 C 150 140, 190 120, 240 120" stroke="#fff" stroke-width="7" fill="none"/><path d="M-10 130 C 50 120, 70 60, 130 70 S 210 30, 240 20" stroke="#22c3e6" stroke-width="2.5" stroke-dasharray="5 5" fill="none"/></svg>
+          <span class="pin" style="left:56px;top:96px;background:#ffb020;color:#ffb020"></span>
+          <span class="pin" style="left:124px;top:58px;background:#4d9bff;color:#4d9bff"></span>
+          <span class="pin" style="left:168px;top:124px;background:#3ddc84;color:#3ddc84"></span>
+          <span class="pin" style="left:30px;top:30px;background:#3ddc84;color:#3ddc84"></span>
+        </div>
+        <div class="list">
+          <div class="item"><i></i><div class="col"><span class="ln" style="width:80%;background:#1b2130"></span><span class="ln s"></span></div><span class="pill" style="background:#ffb020"></span></div>
+          <div class="item"><i></i><div class="col"><span class="ln" style="width:70%;background:#1b2130"></span><span class="ln s"></span></div><span class="pill" style="background:#4d9bff"></span></div>
+          <div class="item"><i></i><div class="col"><span class="ln" style="width:76%;background:#1b2130"></span><span class="ln s"></span></div><span class="pill" style="background:#3ddc84"></span></div>
+          <div class="item"><i></i><div class="col"><span class="ln" style="width:60%;background:#1b2130"></span><span class="ln s"></span></div><span class="pill" style="background:#3ddc84"></span></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <div class="dev phone"><div class="page alert">
+    <div class="head"><span class="ln"></span></div>
+    <div class="mini"><svg viewBox="0 0 120 62" style="position:absolute;inset:0" preserveAspectRatio="none"><path d="M-5 50 C 30 40, 50 15, 125 12" stroke="#fff" stroke-width="7" fill="none"/></svg><span class="pin" style="left:52px;top:22px;background:#ffb020;color:#ffb020"></span></div>
+    <div class="row" style="margin-bottom:9px"><span class="pill" style="width:38px;height:13px;background:#fff2d6;box-shadow:inset 0 0 0 1.5px #ffb020"></span></div>
+    <div class="col"><span class="ln d" style="width:86%"></span><span class="ln s"></span><span class="ln s" style="width:70%"></span></div>
+    <span class="btn"></span>
+    <div class="who"><i style="background:#ffcf8a"></i><i style="background:#9fd8ff"></i><i style="background:#c3b8ff"></i></div>
+  </div></div>
+  <div class="dark donut">
+    <svg width="74" height="74" viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.9" fill="none" stroke="#3ddc84" stroke-width="6" stroke-dasharray="62 38" stroke-dashoffset="25"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#4d9bff" stroke-width="6" stroke-dasharray="24 76" stroke-dashoffset="63"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="#ffb020" stroke-width="6" stroke-dasharray="14 86" stroke-dashoffset="39"/></svg>
+    <div class="legend"><span><i style="background:#ffb020"></i>Open</span><span><i style="background:#4d9bff"></i>Assigned</span><span><i style="background:#3ddc84"></i>Resolved</span></div>
+  </div>
+</section>
+
+<!-- ============ Yalo ============ -->
+<section class="scene" id="yalo">
+  <div class="dev phone"><div class="page wa">
+    <div class="wa-top"><b>✦</b><div><span class="ln"></span><span class="ln s"></span></div></div>
+    <div class="msgs">
+      <div class="msg" style="width:78%"><span class="ln" style="width:100%"></span><span class="ln" style="width:70%"></span></div>
+      <div class="msg me" style="width:64%"><span class="ln" style="width:100%"></span></div>
+      <div class="msg" style="width:82%"><span class="ln" style="width:100%"></span><span class="ln" style="width:90%"></span><span class="ln" style="width:50%"></span></div>
+      <div class="chips"><span></span><span></span><span></span></div>
+      <div class="msg me" style="width:74%"><div class="voice"><b></b><div class="wave">
+        <i style="height:6px"></i><i style="height:12px"></i><i style="height:18px"></i><i style="height:9px"></i><i style="height:15px"></i><i style="height:20px"></i><i style="height:11px"></i><i style="height:7px"></i><i style="height:14px"></i><i style="height:17px"></i><i style="height:8px"></i><i style="height:12px"></i><i style="height:5px"></i><i style="height:10px"></i><i style="height:6px"></i>
+      </div></div></div>
+      <div class="msg" style="width:70%"><span class="ln" style="width:100%"></span><span class="ln" style="width:60%"></span></div>
+    </div>
+    <div class="wa-in"><i></i><b></b></div>
+  </div></div>
+  <div class="dark graph">
+    <svg class="abs" width="330" height="214" style="left:0;top:0"><g stroke="rgba(255,176,32,.55)" stroke-width="2" stroke-dasharray="4 5" fill="none">
+      <path d="M165 107 L 62 50"/><path d="M165 107 L 268 50"/><path d="M165 107 L 62 168"/><path d="M165 107 L 268 168"/></g></svg>
+    <div class="node core" style="left:132px;top:74px">✦</div>
+    <div class="node" style="left:40px;top:28px"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg><span class="chk">✓</span></div><div class="lbl" style="left:40px;top:78px">MCP</div>
+    <div class="node" style="left:246px;top:28px"><svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9a4.5 4.5 0 0 0 1 9Z"/></svg><span class="chk">✓</span></div><div class="lbl" style="left:246px;top:78px">Lambda</div>
+    <div class="node" style="left:40px;top:146px"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 13h18"/></svg><span class="chk">✓</span></div><div class="lbl" style="left:40px;top:196px">Salesforce</div>
+    <div class="node" style="left:246px;top:146px"><svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7Z"/></svg><span class="chk">✓</span></div><div class="lbl" style="left:246px;top:196px">Webhooks</div>
+  </div>
+  <div class="light vcard">
+    <span class="mic"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span>
+    <div class="wave" style="height:30px">
+      <i style="height:8px"></i><i style="height:16px"></i><i style="height:26px"></i><i style="height:12px"></i><i style="height:20px"></i><i style="height:30px"></i><i style="height:14px"></i><i style="height:22px"></i><i style="height:9px"></i><i style="height:18px"></i><i style="height:26px"></i><i style="height:11px"></i><i style="height:16px"></i><i style="height:7px"></i><i style="height:12px"></i><i style="height:20px"></i><i style="height:9px"></i>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APESA ============ -->
+<section class="scene" id="apesa">
+  <div class="dev desk"><div class="page rep">
+    <div class="rep-top"><b></b><span class="ln d" style="width:90px"></span><span class="pill"></span></div>
+    <div class="rep-grid">
+      <div class="tile">
+        <div class="big-ring"><svg width="92" height="92" viewBox="0 0 42 42"><circle cx="21" cy="21" r="17" fill="none" stroke="#e3f6ea" stroke-width="5"/><circle cx="21" cy="21" r="17" fill="none" stroke="#3ddc84" stroke-width="5" stroke-dasharray="107 107" transform="rotate(-90 21 21)"/></svg><b>✓</b></div>
+        <span class="ln" style="width:80%;margin:0 auto"></span>
+      </div>
+      <div>
+        <div class="tile"><div class="runs"><i class="m" style="height:30%"></i><i class="m" style="height:36%"></i><i class="m" style="height:34%"></i><i style="height:48%"></i><i style="height:56%"></i><i style="height:62%"></i><i style="height:70%"></i><i style="height:76%"></i><i style="height:84%"></i><i style="height:90%"></i><i style="height:96%"></i><i style="height:100%"></i></div></div>
+        <div class="suites">
+          <div class="suite"><span class="chk">✓</span><span class="ln"></span><span class="ln s"></span></div>
+          <div class="suite"><span class="chk">✓</span><span class="ln" style="max-width:70%"></span><span class="ln s" style="margin-left:auto"></span></div>
+        </div>
+      </div>
+    </div>
+  </div></div>
+  <div class="dark pipe">
+    <div class="stage"><b><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4Z"/></svg></b><span class="lbl">Build</span></div>
+    <div class="link"></div>
+    <div class="stage"><b><svg viewBox="0 0 24 24"><path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3M7 15h10"/></svg></b><span class="lbl">Test</span></div>
+    <div class="link"></div>
+    <div class="stage"><b><svg viewBox="0 0 24 24"><path d="M6 3h9l3 3v15H6ZM9 12h6M9 16h6M9 8h3"/></svg></b><span class="lbl">Report</span></div>
+    <div class="link"></div>
+    <div class="stage"><b><svg viewBox="0 0 24 24"><path d="M5 15c-1.5 1.3-2 5-2 5s3.7-.5 5-2M9 13l2 2M14 4c3-1 6-1 6-1s0 3-1 6l-6 7-5-5Z"/></svg></b><span class="lbl">Deploy</span></div>
+  </div>
+  <div class="light team">
+    <span class="ln d"></span>
+    <div class="faces">
+      <i style="background:#ffcf8a"></i><i style="background:#9fd8ff"></i><i style="background:#c3b8ff"></i><i style="background:#ffb3c7"></i>
+      <i style="background:#a8e6c1"></i><i style="background:#ffd9a8"></i><i style="background:#b8cbff"></i><i style="background:#f3b3ff"></i>
+      <i style="background:#9fe3e8"></i><i style="background:#ffc1a8"></i><i style="background:#d2c4a8"></i><i style="background:#c9e69f"></i>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Munich Re ============ -->
+<section class="scene" id="munich">
+  <div class="dev desk"><div class="page pega">
+    <div class="pega-top"><b></b><span class="ln"></span><i></i></div>
+    <div class="chev"><span></span><span></span><span></span><span></span></div>
+    <div class="board">
+      <div class="lane"><div class="case"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i></i><span class="pill"></span></div></div><div class="case"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i></i><span class="pill"></span></div></div><div class="case"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i></i><span class="pill"></span></div></div></div>
+      <div class="lane"><div class="case hot"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i style="background:#ffcf8a"></i><span class="pill" style="background:#fff2d6"></span></div></div><div class="case"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i></i><span class="pill"></span></div></div></div>
+      <div class="lane"><div class="case"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i></i><span class="pill"></span></div></div><div class="case"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i></i><span class="pill"></span></div></div></div>
+      <div class="lane"><div class="case done"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i style="background:#a8e6c1"></i><span class="pill" style="background:#d5f7e3"></span></div></div><div class="case done"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i style="background:#a8e6c1"></i><span class="pill" style="background:#d5f7e3"></span></div></div><div class="case done"><span class="ln" style="background:#1b2130"></span><span class="ln"></span><div class="row"><i style="background:#a8e6c1"></i><span class="pill" style="background:#d5f7e3"></span></div></div></div>
+    </div>
+  </div></div>
+  <div class="dark envs">
+    <div class="shield">✓</div>
+    <div class="env"><span class="chk">✓</span>DEV<span class="ln"></span></div>
+    <div class="env"><span class="chk">✓</span>STG<span class="ln"></span></div>
+    <div class="env"><span class="chk">✓</span>PROD<span class="ln"></span></div>
+  </div>
+  <div class="light policy">
+    <span class="doc"></span>
+    <div class="col"><span class="ln d" style="width:80%"></span><span class="ln s"></span><span class="pill"></span></div>
+  </div>
+</section>
+
+<script>document.getElementById(location.hash.slice(1)).classList.add('on')</script>
+</body>
+</html>

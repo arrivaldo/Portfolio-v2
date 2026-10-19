@@ -3,8 +3,11 @@ import { socials } from '../data'
 import { useLang } from '../i18n'
 import { gsap, hasFinePointer, prefersReducedMotion } from '../motion'
 import { CaseStudy, type CaseData } from './CaseStudy'
-import { ArrowUpRight } from './Icons'
+import { ArrowRight, ArrowUpRight } from './Icons'
 import { SectionHead } from './SectionHead'
+
+/** On mobile only the first MOBILE_LIMIT rows show until "View more" is tapped. */
+const MOBILE_LIMIT = 10
 
 /** Compact list of smaller projects, its own page section, framed like a project card. A row opens the same case-study modal as the featured projects. */
 export function Archive() {
@@ -13,6 +16,7 @@ export function Archive() {
   const [active, setActive] = useState(0)
   const [hovering, setHovering] = useState(false)
   const [open, setOpen] = useState<CaseData | null>(null)
+  const [expanded, setExpanded] = useState(false)
   const preview = useRef<HTMLDivElement>(null)
 
   // Same floating card as Experience: trails the cursor and slides to the hovered project's image.
@@ -42,9 +46,9 @@ export function Archive() {
         }
       />
       <div className="archive">
-        <ul className="archive__list" data-reveal-stagger onPointerEnter={() => setHovering(true)} onPointerLeave={() => setHovering(false)}>
+        <ul className={`archive__list${expanded ? ' is-expanded' : ''}`} id="archive-list" data-reveal-stagger onPointerEnter={() => setHovering(true)} onPointerLeave={() => setHovering(false)}>
           {t.archive.map((p, i) => (
-            <li key={p.name} onPointerEnter={() => setActive(i)}>
+            <li key={p.name} className={i >= MOBILE_LIMIT ? 'archive__extra' : undefined} onPointerEnter={() => setActive(i)}>
               <button
                 type="button"
                 className="archive__row"
@@ -62,6 +66,12 @@ export function Archive() {
             </li>
           ))}
         </ul>
+        {t.archive.length > MOBILE_LIMIT && (
+          <button type="button" className={`archive__more${expanded ? ' is-open' : ''}`} onClick={() => setExpanded((v) => !v)} aria-expanded={expanded} aria-controls="archive-list">
+            {expanded ? t.ui.showLess : t.ui.showMore}
+            <ArrowRight size={16} />
+          </button>
+        )}
       </div>
 
       <div className={`work-preview${hovering ? ' is-visible' : ''}`} ref={preview} aria-hidden="true">

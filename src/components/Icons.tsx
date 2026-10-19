@@ -30,6 +30,12 @@ export const ArrowUpRight = ({ size = 16, ...p }: IconProps) => (
   </svg>
 )
 
+export const ChatBubble = ({ size = 20, ...p }: IconProps) => (
+  <svg {...base(size)} {...stroke} {...p}>
+    <path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12Z" />
+  </svg>
+)
+
 export const Sun = ({ size = 16, ...p }: IconProps) => (
   <svg {...base(size)} {...stroke} {...p}>
     <circle cx="12" cy="12" r="4" />

@@ -7,7 +7,7 @@ export type Article = { id: number; title: string; description: string; href: st
 export type Skill = { id: 'frontend' | 'styles' | 'backend' | 'devops'; title: string; items: string[] }
 export type Job = { period: string; company: string; role: string; logo: string; highlights: string[] }
 /** How a project's headline metric is demonstrated on screen. */
-export type Proof = { kind: 'race'; before: number; after: number } | { kind: 'count'; to: number } | { kind: 'live' }
+export type Proof = { kind: 'race'; before: number; after: number } | { kind: 'count'; to: number; unit: 'person' | 'client' | 'page' } | { kind: 'live' }
 export type Project = {
   id: string
   title: string
@@ -20,6 +20,8 @@ export type Project = {
   href: string
   proof: Proof
   story: { problem: string; solution: string; result: string }
+  /** Set on work done for a client while employed elsewhere: shows who it was for, through whom, and my part. */
+  client?: { via: string; role: string; period: string }
 }
 /** Smaller projects. `story` feeds the same case-study modal as the featured projects (drafted by Claude from the v1 descriptions — user to review). */
 export type ArchiveProject = { name: string; tagline: string; description: string; stack: string[]; href: string; image: string; glow: string; story: { problem: string; solution: string; result: string } }
@@ -29,17 +31,8 @@ export type Testimonial = { quote: string; name: string; role: string; photo?: s
 export type Role = { slug: string; title: string; description: string; stack: string[]; signal: string }
 export type NowItem = { label: string; text: string }
 
-
-/** One manual task raced against its automation in the Lab. Minutes/seconds/runs are illustrative. */
-export type LabTask = { id: string; name: string; manual: string[]; auto: [string, string][]; manualMin: number; autoSec: number; runsPerMonth: number }
-export type LabNeed = { id: string; label: string; role: string; stack: string[]; phases: [string, number][] }
-export type LabStep = { tool: string; text: string; log: string }
 export type LabCopy = {
-  bento: { title: string; lead: string; globeTitle: string; globeText: string; cubeTitle: string; cubeText: string; timeTitle: string; day: string; night: string; ahead: string; behind: string; same: string; nowTitle: string; ghTitle: string; ghText: string; ghNote: string; ghError: string; askTitle: string; askText: string; askOpen: string }
-  automate: { title: string; lead: string; manual: string; auto: string; run: string; again: string; saved: string; perMonth: string; note: string; tasks: LabTask[] }
-  mission: { title: string; lead: string; live: string; activity: string; feed: string; languages: string; repos: string; lastPush: string; pushed: string; loading: string; error: string; open: string; ago: [string, string, string, string] }
-  plan: { title: string; lead: string; ask: string; empty: string; plan: string; weeks: string; week: string; ongoing: string; stack: string; roles: string; cta: string; note: string; kickoff: string; handover: string; needs: LabNeed[] }
-  incident: { title: string; lead: string; alert: string; resolved: string; replay: string; mttr: string; postmortem: string; post: [string, string][]; steps: LabStep[] }
+  bento: { title: string; lead: string; globeTitle: string; globeText: string; cubeTitle: string; cubeText: string; spin: string; timeTitle: string; day: string; night: string; ahead: string; behind: string; same: string; nowTitle: string; ghTitle: string; ghText: string; ghNote: string; ghError: string; askTitle: string; askText: string; askOpen: string }
 }
 
 export type Content = {
@@ -65,6 +58,7 @@ export type Content = {
     projects: string
     loading: string
     resume: string
+    menu: { open: string; close: string }
     readMore: string
     readArticle: string
     prevArticle: string
@@ -88,13 +82,16 @@ export type Content = {
     archiveLabel: string
     archiveTitle: string
     viewAll: string
+    showMore: string
+    showLess: string
     viewCase: string
+    clientWork: string
     processLabel: string
     processTitle: string
     testimonialsLabel: string
     testimonialsTitle: string
     labLabel: string
-    /** Lab demos (?lab=automate|mission|plan|incident). Copy and figures drafted by Claude — user to review. */
+    /** "Beyond the code" bento copy. */
     lab: LabCopy
     contactLabel: string
     contactTitle: [string, string]
@@ -106,22 +103,10 @@ export type Content = {
     backToTop: string
     rights: string
     switchTo: (mode: string) => string
-    proof: { manual: string; withAi: string; live: string; checking: string; latency: (ms: number) => string }
+    proof: { manual: string; withAi: string; live: string; checking: string; latency: (ms: number) => string; median: string; saved: string }
     story: { open: string; problem: string; solution: string; result: string; visit: string; close: string }
-    workflow: { title: string; caption: string; nodes: [string, string][] }
-    services: {
-      live: string
-      gate: { suites: [string, string][]; passed: string }
-      hub: { core: string; caption: string }
-      /** Pipeline stage verbs, in the order Solutions → Software → QA → AI. */
-      stages: string[]
-      phases: string[]
-      lead: string
-      support: string
-      spin: string
-    }
     build: string
-    chat: { open: string; title: string; intro: string; placeholder: string; send: string; close: string; thinking: string; suggestions: string[]; errors: { busy: string; offline: string; generic: string } }
+    chat: { open: string; hint: string; title: string; intro: string; placeholder: string; send: string; close: string; thinking: string; suggestions: string[]; errors: { busy: string; offline: string; generic: string } }
     form: { title: string; name: string; email: string; subject: string; message: string; send: string; sending: string; sent: string; error: string }
     pauseCarousel: string
     skip: string
@@ -186,27 +171,35 @@ const profile = {
 }
 
 const projectsBase = [
-  { id: 'ai-email', title: 'AI Email Reply Extension', stack: ['JavaScript', 'Spring Boot'], image: '/projects/ai-email.webp', glow: '#8b7cff', href: 'https://chromewebstore.google.com/detail/email-writer-assistant/bkpahmihgmehmppafbnmonmagfohckno', proof: { kind: 'race', before: 100, after: 60 } as Proof },
-  { id: 'blog', title: 'Full Stack Blog App', stack: ['React', 'GraphQL'], image: '/projects/blog.webp', glow: '#4d7cff', href: 'https://code-toast-blog.vercel.app/', proof: { kind: 'count', to: 30 } as Proof },
-  { id: 'incidents', title: 'Incidence Management App', stack: ['React', 'Node.js', 'MongoDB'], image: '/projects/incidents.webp', glow: '#22c3e6', href: 'https://cds-estafeta.vercel.app/', proof: { kind: 'count', to: 25 } as Proof },
-  { id: 'artist', title: 'Real Artist Personal Website', stack: ['React', 'Vite', 'Tailwind'], image: '/projects/artist.webp', glow: '#ff7ac8', href: 'https://nedelka.vercel.app/', proof: { kind: 'live' } as Proof },
-  { id: 'agency', title: 'Software Agency App', stack: ['React', 'TypeScript', 'Next.js'], image: '/projects/agency.webp', glow: '#ff8a3d', href: 'https://rodri-labs.vercel.app/', proof: { kind: 'live' } as Proof },
+  { id: 'ai-email', title: 'AI Email Reply Extension', stack: ['JavaScript', 'Spring Boot'], image: '/projects/art-email.webp', glow: '#8b7cff', href: 'https://chromewebstore.google.com/detail/email-writer-assistant/bkpahmihgmehmppafbnmonmagfohckno', proof: { kind: 'race', before: 100, after: 60 } as Proof },
+  { id: 'incidents', title: 'Incidence Management App', stack: ['React', 'Node.js', 'MongoDB'], image: '/projects/art-incidents.webp', glow: '#22c3e6', href: 'https://cds-estafeta.vercel.app/', proof: { kind: 'count', to: 25, unit: 'person' } as Proof },
+  // Client work (texts drafted by Claude from the resume — user to review). Images are illustrative mockups of my part of the work, not the clients' sites.
+  { id: 'yalo', title: 'AI Agents', stack: ['TypeScript', 'Python', 'Lua', 'AWS', 'MCP'], image: '/projects/art-yalo.webp', glow: '#ffb020', href: 'https://platform.happyrobot.ai/deployments/cxbnp1tydydh', proof: { kind: 'count', to: 20, unit: 'client' } as Proof },
+  { id: 'apesa', title: 'APESA QA Automation', stack: ['Playwright', 'GitLab CI/CD', '.NET', 'JMeter', 'SQL'], image: '/projects/art-apesa.webp', glow: '#3ddc84', href: 'https://apesa.mx/', proof: { kind: 'count', to: 12, unit: 'person' } as Proof },
+  // HealthTech and Life US merged into one card: same client, stack and image.
+  { id: 'munichre', title: 'Munich Re', stack: ['Pega', 'Java', 'SQL', 'Playwright', 'Jenkins'], image: '/projects/art-munich.webp', glow: '#4d7cff', href: 'https://www.munichre.com/mrhealthtech/en.html', proof: { kind: 'live' } as Proof },
+  { id: 'claro360', title: 'Claro 360', stack: ['JavaScript', 'TypeScript', 'JSP', 'Webpack', 'Laravel'], image: '/projects/art-claro.webp', glow: '#ff5a5a', href: 'https://claro360.com/plataforma360/suitePersona', proof: { kind: 'count', to: 20, unit: 'page' } as Proof },
 ]
 
 const archiveBase = [
-  { name: 'QueueStack', stack: ['TypeScript', 'HTML', 'JavaScript'], href: 'https://github.com/arrivaldo/To-Do-Extension', image: '/projects/todoExtension.webp', glow: '#22c3e6' },
-  { name: 'Heimdall', stack: ['TypeScript', 'React', 'Ruby'], href: 'https://heimdall.yalochat.com/', image: '/projects/heimdall.webp', glow: '#8b7cff' },
-  { name: 'MERN Blog + AWS S3', stack: ['MongoDB', 'Express', 'Node.js', 'React'], href: 'https://github.com/arrivaldo/Blog-app', image: '/projects/MERNblog.webp', glow: '#4d7cff' },
-  { name: 'webtemplate-js', stack: ['JavaScript', 'HTML', 'CSS'], href: 'https://www.npmjs.com/package/webtemplate-js', image: '/projects/webtemplate.webp', glow: '#ff8a3d' },
-  { name: 'notes.io', stack: ['MongoDB', 'Express', 'React', 'Node.js', 'JWT', 'bcrypt'], href: 'https://quicknotes-io.vercel.app/', image: '/projects/notes.webp', glow: '#3ddc84' },
-  { name: 'Docs-pi-app', stack: ['React', 'Tailwind CSS', 'Vite'], href: 'https://docs-pi-app.vercel.app/', image: '/projects/docs.webp', glow: '#ff7ac8' },
-  { name: 'Store management system', stack: ['C'], href: 'https://onlinegdb.com/OXOlVWJFj', image: '/projects/StoreManagementSystem.webp', glow: '#22c3e6' },
-  { name: 'Arkanoid', stack: ['Java'], href: 'https://github.com/arrivaldo/Java-Arkanoid', image: '/projects/arkanoid.webp', glow: '#ffb020' },
-  { name: 'ScreenRec.io', stack: ['JavaScript', 'HTML', 'CSS'], href: 'https://screen-recorder-apk.vercel.app/', image: '/projects/screenRecorder.webp', glow: '#8b7cff' },
-  { name: 'Convert.io', stack: ['React', 'Next.js', 'Shadcn/ui', 'ffmpeg'], href: 'https://convertio-file.vercel.app/', image: '/projects/convertio.webp', glow: '#7ef0ff' },
-  { name: 'Threefolio', stack: ['JavaScript', 'Three.js', 'GSAP'], href: 'https://threefolio.vercel.app/', image: '/projects/threefolio.webp', glow: '#c86cff' },
+  { name: 'QueueStack', stack: ['TypeScript', 'HTML', 'JavaScript'], href: 'https://github.com/arrivaldo/To-Do-Extension', image: '/projects/archive-queuestack.webp', glow: '#22c3e6' },
+  { name: 'Heimdall', stack: ['TypeScript', 'React', 'Ruby'], href: 'https://heimdall.yalochat.com/', image: '/projects/archive-heimdall.webp', glow: '#8b7cff' },
+  { name: 'MERN Blog + AWS S3', stack: ['MongoDB', 'Express', 'Node.js', 'React'], href: 'https://github.com/arrivaldo/Blog-app', image: '/projects/archive-mernblog.webp', glow: '#4d7cff' },
+  { name: 'webtemplate-js', stack: ['JavaScript', 'HTML', 'CSS'], href: 'https://www.npmjs.com/package/webtemplate-js', image: '/projects/archive-webtemplate.webp', glow: '#ff8a3d' },
+  { name: 'notes.io', stack: ['MongoDB', 'Express', 'React', 'Node.js', 'JWT', 'bcrypt'], href: 'https://quicknotes-io.vercel.app/', image: '/projects/archive-notes.webp', glow: '#3ddc84' },
+  { name: 'Docs-pi-app', stack: ['React', 'Tailwind CSS', 'Vite'], href: 'https://docs-pi-app.vercel.app/', image: '/projects/archive-docs.webp', glow: '#ff7ac8' },
+  { name: 'Store management system', stack: ['C'], href: 'https://onlinegdb.com/OXOlVWJFj', image: '/projects/archive-store.webp', glow: '#22c3e6' },
+  { name: 'Arkanoid', stack: ['Java'], href: 'https://github.com/arrivaldo/Java-Arkanoid', image: '/projects/archive-arkanoid.webp', glow: '#ffb020' },
+  { name: 'ScreenRec.io', stack: ['JavaScript', 'HTML', 'CSS'], href: 'https://screen-recorder-apk.vercel.app/', image: '/projects/archive-screenrec.webp', glow: '#8b7cff' },
+  { name: 'Convert.io', stack: ['React', 'Next.js', 'Shadcn/ui', 'ffmpeg'], href: 'https://convertio-file.vercel.app/', image: '/projects/archive-convertio.webp', glow: '#7ef0ff' },
+  { name: 'Threefolio', stack: ['JavaScript', 'Three.js', 'GSAP'], href: 'https://threefolio.vercel.app/', image: '/projects/archive-threefolio.webp', glow: '#c86cff' },
   // v1 linked Reply.io to docs-pi-app by mistake; this is its Spring Boot repo on GitHub.
-  { name: 'Reply.io', stack: ['Java', 'Spring Boot', 'JavaScript'], href: 'https://github.com/arrivaldo/email-writer-spring-boot', image: '/projects/emailWriter.webp', glow: '#4d7cff' },
+  { name: 'Reply.io', stack: ['Java', 'Spring Boot', 'JavaScript'], href: 'https://github.com/arrivaldo/email-writer-spring-boot', image: '/projects/archive-reply.webp', glow: '#4d7cff' },
+  // Moved down from the featured projects; listed first in the archive.
+  { name: 'Full Stack Blog App', stack: ['React', 'GraphQL'], href: 'https://code-toast-blog.vercel.app/', image: '/projects/archive-blog.webp', glow: '#4d7cff' },
+  { name: 'Real Artist Personal Website', stack: ['React', 'Vite', 'Tailwind'], href: 'https://nedelka.vercel.app/', image: '/projects/archive-artist.webp', glow: '#ff7ac8' },
+  { name: 'Software Agency App', stack: ['React', 'TypeScript', 'Next.js'], href: 'https://rodri-labs.vercel.app/', image: '/projects/agency.webp', glow: '#ff8a3d' },
+  { name: 'Popular en Línea', stack: ['React', 'C#', '.NET', 'SQL Server', 'SharePoint'], href: 'https://popularenlinea.com/personas/Paginas/Home.aspx', image: '/projects/archive-popular.webp', glow: '#4d7cff' },
 ]
 
 const jobsBase = [
@@ -247,7 +240,17 @@ const roleStacks = {
   mechatronics: ['C/C++', 'Python', 'CAD', 'PLC', 'Matlab', 'SolidWorks', 'Simulink', 'IoT', 'PID', 'Arduino', 'Raspberry Pi'],
 }
 
-const photos = { sam: '/people/sam.webp', madhu: '/people/madhu.webp', darwin: '/people/darwin.webp' }
+const photos = {
+  sam: '/people/sam.webp',
+  madhu: '/people/madhu.webp',
+  darwin: '/people/darwin.webp',
+  aldo: '/people/aldo.webp',
+  carlos: '/people/carlos.webp',
+  juan: '/people/juan.webp',
+  luis: '/people/luis.webp',
+  manuel: '/people/manuel.webp',
+  rulesCube: '/companies/rules-cube.webp',
+}
 
 const en: Content = {
   meta: {
@@ -274,6 +277,7 @@ const en: Content = {
     projects: 'Explore my work',
     loading: 'Loading',
     resume: 'Resume',
+    menu: { open: 'Open menu', close: 'Close menu' },
     readMore: 'Open',
     readArticle: 'Open link',
     prevArticle: 'Previous',
@@ -296,7 +300,10 @@ const en: Content = {
     archiveLabel: '... /Archive ...',
     archiveTitle: 'More projects',
     viewAll: 'All projects on GitHub',
+    showMore: 'View more',
+    showLess: 'View less',
     viewCase: 'View',
+    clientWork: 'Client work',
     processLabel: '... /Services ...',
     processTitle: 'What I do',
     testimonialsLabel: '... /Testimonials ...',
@@ -310,6 +317,7 @@ const en: Content = {
         globeText: 'Remote-first, working with teams across time zones.',
         cubeTitle: 'Tech stack',
         cubeText: 'tools across six roles',
+        spin: 'Spin the cube',
         timeTitle: 'Local time',
         day: 'daytime',
         night: 'night time',
@@ -325,78 +333,6 @@ const en: Content = {
         askText: 'An AI assistant that knows my work. Pick a question or ask your own.',
         askOpen: 'Open the chat',
       },
-      automate: {
-        title: 'Automate this',
-        lead: 'Pick a task people still do by hand and watch it *race its automation*.',
-        manual: 'By hand',
-        auto: 'Automated',
-        run: 'Run race',
-        again: 'Run again',
-        saved: 'saved per month',
-        perMonth: 'runs a month',
-        note: 'Typical figures from my client work; every team is different.',
-        tasks: [
-          { id: 'report', name: 'Weekly sales report', manualMin: 95, autoSec: 42, runsPerMonth: 4, manual: ['Export CSVs from 3 systems', 'Merge them in Excel', 'Fix formats and duplicates', 'Build the charts', 'Write the summary email', 'Send it to 12 people'], auto: [['Cron trigger', 'n8n'], ['Query SQL + CRM API', 'Python'], ['Clean and merge', 'pandas'], ['Render the PDF report', 'Lambda'], ['Post to Slack + email', 'Webhooks']] },
-          { id: 'qa', name: 'Checkout regression test', manualMin: 180, autoSec: 210, runsPerMonth: 8, manual: ['Open the browser and log in', 'Add products to the cart', 'Try 6 payment methods', 'Check totals and emails', 'Repeat it all on mobile', 'Write the bug report'], auto: [['Pull request opened', 'GitHub Actions'], ['48 end-to-end tests', 'Playwright'], ['API contract tests', 'Postman'], ['Mobile viewport run', 'Playwright'], ['Report + screenshots on the PR', 'CI']] },
-          { id: 'triage', name: 'Support ticket triage', manualMin: 120, autoSec: 25, runsPerMonth: 22, manual: ['Read every new ticket', 'Search the logs for the user', 'Guess the priority', 'Assign it to a team', 'Reply to the customer'], auto: [['New ticket webhook', 'Zendesk'], ['Classify + set priority', 'LLM + RAG'], ['Pull the user\'s logs', 'Datadog API'], ['Route to the right team', 'Jira'], ['Draft a reply for review', 'MCP']] },
-        ],
-      },
-      mission: {
-        title: 'Mission control',
-        lead: 'My real GitHub activity, *live*. No mockups.',
-        live: 'Live',
-        activity: 'Activity · last 12 months',
-        feed: 'Latest pushes',
-        languages: 'Languages',
-        repos: 'public repos',
-        lastPush: 'last push',
-        pushed: 'pushed to',
-        loading: 'Connecting to GitHub…',
-        error: 'GitHub is not answering right now.',
-        open: 'Open my GitHub',
-        ago: ['just now', 'min ago', 'h ago', 'd ago'],
-      },
-      plan: {
-        title: 'Build your project',
-        lead: 'Tick what you need and get a *first plan* in seconds: phases, stack and who does what.',
-        ask: 'What do you need?',
-        empty: 'Pick at least one option to see the plan.',
-        plan: 'Your plan',
-        weeks: 'weeks',
-        week: 'Wk',
-        ongoing: 'ongoing',
-        stack: 'Stack',
-        roles: 'Roles',
-        cta: "Let's talk about it",
-        note: 'A starting point for a conversation, not a quote.',
-        kickoff: 'Discovery and architecture',
-        handover: 'Launch and handover',
-        needs: [
-          { id: 'web', label: 'A web or mobile app', role: 'Software Engineer', stack: ['React', 'Node.js', 'TypeScript', 'AWS'], phases: [['Design and API contracts', 1], ['Build front end and back end', 3]] },
-          { id: 'qa', label: 'Automated testing', role: 'Quality Assurance', stack: ['Playwright', 'Postman', 'GitHub Actions'], phases: [['Test strategy and critical paths', 1], ['E2E and API suites in CI', 2]] },
-          { id: 'auto', label: 'Automations and AI agents', role: 'Automation Engineer', stack: ['n8n', 'Python', 'AWS Lambda', 'RAG'], phases: [['Map the manual workflows', 1], ['Build the flows and agents', 2]] },
-          { id: 'support', label: 'Production support', role: 'Senior Product Engineer', stack: ['Datadog', 'CloudWatch', 'SQL'], phases: [['Observability and runbooks', 1], ['L2/L3 support and root-cause fixes', 0]] },
-        ],
-      },
-      incident: {
-        title: 'Live incident',
-        lead: 'Production breaks at 2 a.m. This is *how I take it from alert to postmortem*.',
-        alert: 'ALERT · checkout returning 500s',
-        resolved: 'Resolved',
-        replay: 'Replay incident',
-        mttr: 'time to resolve',
-        postmortem: 'Postmortem',
-        post: [['Root cause', 'Yesterday\'s migration dropped an index on orders; checkout queries waited on row locks.'], ['Fix', 'Index rebuilt concurrently, plus retries with backoff on the payment call.'], ['Prevention', 'A CI check that blocks migrations without index review, and an alert on lock wait time.']],
-        steps: [
-          { tool: 'Datadog', text: 'Checkout 5xx up 340%, p95 at 4.8 s', log: 'monitor: checkout.errors > threshold (02:14)' },
-          { tool: 'CloudWatch', text: 'The payment service is timing out', log: 'TimeoutError: POST /pay exceeded 30000ms' },
-          { tool: 'Tracing', text: 'Every slow request waits on the database', log: 'span db.orders.select_for_update 28.2s' },
-          { tool: 'SQL', text: 'Root cause: missing index after a migration', log: 'EXPLAIN → Seq Scan on orders (rows=4.1M)' },
-          { tool: 'Hotfix', text: 'Rebuild the index, add retry with backoff', log: 'CREATE INDEX CONCURRENTLY idx_orders_status…' },
-          { tool: 'Playwright', text: 'Checkout suite green on staging', log: '48 passed (1.9m)' },
-          { tool: 'Deploy', text: 'Canary 10% → 100%, errors back to normal', log: 'rollout complete · 5xx 0.02%' },
-        ],
-      },
     },
     contactLabel: '... /Contact ...',
     contactTitle: ["Let's work", 'together'],
@@ -408,29 +344,12 @@ const en: Content = {
     backToTop: 'Back to top',
     rights: 'All rights reserved',
     switchTo: (mode) => `Switch to ${mode} mode`,
-    proof: { manual: 'Manual', withAi: 'With AI', live: 'Live', checking: 'Checking…', latency: (ms) => `responded in ${ms} ms` },
+    proof: { manual: 'Manual', withAi: 'With AI', live: 'Live', checking: 'Checking…', latency: (ms) => `responded in ${ms} ms`, median: 'median of live pings', saved: 'time saved' },
     story: { open: 'View case', problem: 'Problem', solution: 'Solution', result: 'Result', visit: 'Visit project', close: 'Close' },
-    workflow: {
-      title: 'A workflow I automate',
-      caption: 'A new lead arrives, an AI agent qualifies it, the CRM is updated and the team gets notified. No one copies anything by hand.',
-      nodes: [['Webhook', 'new lead'], ['AI agent', 'qualifies'], ['CRM API', 'upsert'], ['Slack', 'notify team']],
-    },
-    services: {
-      live: 'v2.4.1 live in production',
-      gate: {
-        suites: [['UI · Playwright', '142 passed'], ['API · Postman', '86 passed'], ['E2E · Cypress', '38 passed'], ['Load · JMeter', 'p95 240 ms']],
-        passed: 'Quality gate passed — ready to release',
-      },
-      hub: { core: 'Business core', caption: 'One process, four systems, a single source of truth.' },
-      stages: ['Design', 'Build', 'Verify', 'Automate'],
-      phases: ['Discover', 'Design', 'Build', 'Test', 'Automate', 'Operate'],
-      lead: 'Lead',
-      support: 'Support',
-      spin: 'Spin',
-    },
     build: 'build passing',
     chat: {
       open: 'Ask my portfolio',
+      hint: 'Ask it anything about my work',
       title: 'Ask me anything',
       intro: "Hi! I'm Erick's AI assistant, built with an LLM grounded in this portfolio. Ask about my experience, projects or stack.",
       placeholder: 'Type your question…',
@@ -468,12 +387,17 @@ const en: Content = {
   ],
   projects: [
     { ...projectsBase[0], summary: 'Gmail extension that generates contextual and stylized replies using AI.', metric: { value: '~40%', label: 'less time per reply' }, story: { problem: 'Writing thoughtful replies by hand took a big share of every working day.', solution: 'A Gmail extension that reads the thread and drafts a contextual reply in the chosen tone, backed by a Spring Boot API that calls the LLM.', result: 'About 40% less time per reply, published on the Chrome Web Store.' } },
-    { ...projectsBase[1], summary: 'Platform to publish and share technical articles.', metric: { value: '30+', label: 'articles published' }, story: { problem: 'Developers needed a simple place to publish and share technical posts.', solution: 'A full-stack blog with a React front end and a GraphQL API for posts, authors and tags.', result: '30+ articles published, including the REST vs. GraphQL and Closures guides.' } },
-    { ...projectsBase[2], summary: 'Vehicle incident management system for operational control.', metric: { value: '25', label: 'active users' }, story: { problem: 'Vehicle incidents were tracked across spreadsheets and messages, with no single source of truth.', solution: 'A web app on React, Node.js and MongoDB to log, assign and follow up every incident with its status and history.', result: '25 active users running operational control on it.' } },
-    { ...projectsBase[3], summary: 'Artist website showcasing a musical and acting career.', metric: { value: 'Live', label: 'artist showcase' }, story: { problem: 'An artist needed one place to present her music and acting career.', solution: 'A fast React + Vite site styled with Tailwind, built around her work, media and contact.', result: 'Live as her professional showcase.' } },
-    { ...projectsBase[4], summary: 'Agency landing page showcasing a professional profile.', metric: { value: 'Live', label: 'agency landing page' }, story: { problem: 'A software agency needed a landing page that presented its profile with credibility.', solution: 'A Next.js + TypeScript landing with clear service sections and a strong visual identity.', result: 'Live as the agency\'s landing page.' } },
+    { ...projectsBase[1], summary: 'Vehicle incident management system for operational control.', metric: { value: '25', label: 'active users' }, story: { problem: 'Vehicle incidents were tracked across spreadsheets and messages, with no single source of truth.', solution: 'A web app on React, Node.js and MongoDB to log, assign and follow up every incident with its status and history.', result: '25 active users running operational control on it.' } },
+    { ...projectsBase[2], client: { via: 'Yalo.ai', role: 'Senior Product Support Engineer', period: '2025 – 2026' }, summary: 'Conversational and voice AI agents on WhatsApp and Messenger, plus the internal tooling behind them.', metric: { value: '20+', label: 'international clients supported' }, story: { problem: 'AI agents for 20+ clients ran on distributed services (AWS Lambda, Cloud Functions, webhooks) integrated with Salesforce, SAP and custom ERPs, and escalated incidents were solved by hand.', solution: 'I designed and maintained conversational and voice agents, fixed production services in Lua, TypeScript, Python and Go, and built AI self-service tools with MCP and LLMs plus internal automation such as Heimdall.', result: 'Faster incident resolution, fewer support tickets and stable integrations across Meta platforms.' } },
+    { ...projectsBase[3], client: { via: 'Apesa Software', role: 'Lead Quality Automation Engineer', period: '2025' }, summary: 'Test automation framework for SPEI and CETES financial products, built into GitLab CI/CD.', metric: { value: '12', label: 'engineers trained and led' }, story: { problem: 'Financial systems processing thousands of daily transactions were tested manually, with no automation in the release cycle.', solution: 'I designed the automation framework and testing plan for Angular, .NET and Blazor apps, wired it into GitLab CI/CD with reports and notifications, and added API and performance testing with Postman, Newman and JMeter.', result: 'SPEI and CETES automated within one quarter, and a 12-engineer team moved from manual testing to automation standards that outlived my tenure.' } },
+    { ...projectsBase[4], client: { via: 'Rules Cube', role: 'Pega System Architect · QA Lead', period: '2021 – 2025' }, summary: 'Pega applications and end-to-end QA for a global insurer and its US life reinsurance business.', metric: { value: '1000+', label: 'daily cases processed' }, story: { problem: 'A multinational insurer needed its health and US life reinsurance products on Pega, with strict compliance and quality across dev, staging and production.', solution: 'I architected Pega case management with center-out business architecture, migrated data with ETL and led QA: test plans, automated and manual testing, Scrum and DevOps practices.', result: 'Compliant releases with lower defect rates, a stable post-launch with no data issues, and project renewals for the consultancy.' } },
+    { ...projectsBase[5], client: { via: 'Global Human Capital', role: 'Front-End Software Engineer', period: '2020' }, summary: 'Responsive, data-driven landing pages for a large product suite.', metric: { value: '20+', label: 'landing pages delivered' }, story: { problem: 'A large product suite needed many landing pages released fast, pixel-perfect and with live data.', solution: 'I built responsive pages in JSP and JavaScript fed by APIs, integrated with Laravel, with code splitting, lazy loading and SEO best practices.', result: 'Over 20 landing pages delivered and a noticeable drop in UI tickets.' } },
   ],
   archive: [
+    { ...archiveBase[12], tagline: 'Tech blog', description: 'Platform to publish and share technical articles.', story: { problem: 'Developers needed a simple place to publish and share technical posts.', solution: 'A full-stack blog with a React front end and a GraphQL API for posts, authors and tags.', result: '30+ articles published, including the REST vs. GraphQL and Closures guides.' } },
+    { ...archiveBase[13], tagline: 'Artist website', description: 'Artist website showcasing a musical and acting career.', story: { problem: 'An artist needed one place to present her music and acting career.', solution: 'A fast React + Vite site styled with Tailwind, built around her work, media and contact.', result: 'Live as her professional showcase.' } },
+    { ...archiveBase[14], tagline: 'Agency web app', description: 'Digital home for a software agency: services, work and contact in one app.', story: { problem: 'A software agency needed a digital presence that presented its services and work with credibility.', solution: 'A Next.js + TypeScript app with clear service sections, its work and a strong visual identity.', result: "Live as the agency's digital home." } },
+    { ...archiveBase[15], tagline: 'Banking · via NEORIS', description: 'Online banking web app for a large financial institution.', story: { problem: 'A large bank needed steady releases on its web platform plus fixes for complex server-side defects.', solution: 'I built reusable components in React and TypeScript, fixed C# server-side issues (email delivery, data processing, edge cases) and optimized SQL Server queries.', result: 'More reliable releases and fewer data inconsistencies on the platform.' } },
     { ...archiveBase[8], tagline: 'Free screen recorder', description: 'A screen recorder web app for anyone who does not want to pay for an online one.', story: { problem: 'Online screen recorders hide basic recording behind paywalls, watermarks or sign-ups.', solution: 'A screen recorder that runs entirely in the browser, built with plain JavaScript, HTML and CSS.', result: 'A free utility, live on Vercel, for anyone who needs to record their screen.' } },
     { ...archiveBase[9], tagline: 'Media converter', description: 'Converts images, audio and video in the browser, for free and without restrictions.', story: { problem: 'Converting media usually means uploading files to sites full of limits, ads or paywalls.', solution: 'An online converter for images, audio and video, built with Next.js and Shadcn/ui on top of ffmpeg.', result: 'Free media conversion without restrictions, live on Vercel.' } },
     { ...archiveBase[0], tagline: 'VS Code extension', description: 'A to-do extension for Visual Studio Code to manage coding tasks, available in the marketplace.', story: { problem: 'Small coding tasks lived in notes outside the editor and kept getting lost.', solution: 'A Visual Studio Code extension that keeps a to-do list right inside the editor, next to the code.', result: 'Published in the VS Code marketplace, with setup instructions on GitHub.' } },
@@ -514,10 +438,10 @@ const en: Content = {
     },
     {
       id: 4,
-      title: 'Threefolio — Three.js canvas',
-      description: 'An interactive Three.js plane animated with GSAP to create a dynamic hero component.',
-      href: 'https://threefolio.vercel.app/',
-      tag: 'Experiment',
+      title: 'Software Agency App',
+      description: 'A digital home for a software agency: services, work and contact in one fast Next.js and TypeScript app.',
+      href: 'https://rodri-labs.vercel.app/',
+      tag: 'Product',
       meta: 'Live',
     },
     {
@@ -537,13 +461,13 @@ const en: Content = {
   ],
   skillGroups,
   jobs: [
-    { ...jobsBase[0], period: '2026 — Present', role: 'Automation Engineer', highlights: [] },
-    { ...jobsBase[1], period: 'Jun 2025 — 2026', role: 'Senior Product Engineer', highlights: ['AI agents for 20+ international clients.', 'AI automation tools that cut manual work by 60%.'] },
-    { ...jobsBase[2], period: 'Feb — May 2025', role: 'QA Lead Engineer', highlights: ['Led the QA automation transformation.', 'Playwright framework and GitLab CI/CD; mentored 12 engineers.'] },
-    { ...jobsBase[3], period: 'Jan 2021 — Feb 2025', role: 'QA / Pega System Architect', highlights: ['Enterprise Pega apps processing 1000+ daily cases.', 'Led QA teams; certified Pega System & Business Architect.'] },
-    { ...jobsBase[4], period: '2020 — 2021', role: 'Front-End Developer', highlights: ['20+ responsive landing pages.', 'Performance with lazy loading and code splitting.'] },
-    { ...jobsBase[5], period: '2019 — 2020', role: 'Full-Stack Engineer', highlights: ['Banking apps with React, TypeScript and .NET.'] },
-    { ...jobsBase[6], period: '2018 — 2019', role: 'MIS Engineer', highlights: ['Reporting automation with VBA, SQL and Power BI.'] },
+    { ...jobsBase[0], period: '2026 — Present', role: 'Automation Engineer', highlights: ['Automation of internal processes and workflows.', 'Conversational AI agents for customer channels.', 'WhatsApp integrations on the Meta Business API.'] },
+    { ...jobsBase[1], period: 'Jun 2025 — 2026', role: 'Senior Product Engineer', highlights: ['AI agents for 20+ international clients.', 'AI automation tools that cut manual work by 60%.', 'L2/L3 fixes in Lua, TypeScript, Python and Go.'] },
+    { ...jobsBase[2], period: 'Feb — May 2025', role: 'QA Lead Engineer', highlights: ['SPEI and CETES automated in one quarter.', 'Playwright framework in GitLab CI/CD.', 'Trained and mentored 12 engineers.'] },
+    { ...jobsBase[3], period: 'Jan 2021 — Feb 2025', role: 'QA / Pega System Architect', highlights: ['Pega apps processing 1000+ daily cases.', 'Led QA teams across 5 client projects.', 'Certified Pega System & Business Architect.'] },
+    { ...jobsBase[4], period: '2020 — 2021', role: 'Front-End Developer', highlights: ['20+ responsive landing pages.', 'Lazy loading and code splitting for speed.', 'Fewer UI tickets by fixing defects early.'] },
+    { ...jobsBase[5], period: '2019 — 2020', role: 'Full-Stack Engineer', highlights: ['Banking web app with React and TypeScript.', 'Server-side fixes in C# and SQL Server.', 'Azure, SharePoint and Hyper-V environments.'] },
+    { ...jobsBase[6], period: '2018 — 2019', role: 'MIS Engineer', highlights: ['MIS solutions for data processing.', 'Reporting automation with VBA and Power BI.', 'Tech support for premier banking clients.'] },
   ],
   education: [
     "Master's in Business Management & Quality Engineering (in progress)",
@@ -566,14 +490,15 @@ const en: Content = {
     { slug: 'mechatronics-engineer', title: 'Mechatronics Engineer', stack: roleStacks.mechatronics, signal: 'Engineering across software, electronics and physical systems', description: 'I connect software, electronics and mechanical systems to build automated solutions through control, sensing and intelligent hardware.' },
   ],
   testimonials: [
+    { quote: "Erick joined Casa Médica to automate our processes and he's delivering: he connected our WhatsApp channels to conversational agents, which increased our conversion rate and reduced our response time to customers. He has been invaluable to our growth.", name: 'Manuel Centeno', role: 'CEO, Casa Médica', photo: photos.manuel },
     { quote: 'Erick performed QA activities for an upgrade project of the Pega platform with a smooth, successful result. He took initiative to quickly understand the client application, creating test cases and executing them.', name: 'Sam Gharnagh', role: 'Vice President', photo: photos.sam },
     { quote: 'His meticulous attention to detail, strong analytical skills and dedication to product quality were evident in every project. Erick is a valuable asset to any team.', name: 'Madhu Chalamaiah', role: 'Lead Developer', photo: photos.madhu },
-    { quote: "One of Erick's standout strengths is his ability to leverage AI to solve problems and improve processes. He strengthened the support tools our team relies on every day.", name: 'Aldo Galleoti', role: 'Customer Service Lead' },
-    { quote: 'His dedication to product quality, keen eye for detail and proactive approach consistently elevated the team’s performance.', name: 'Carlos Ortíz Sánchez', role: 'Technology Director, Apesa Software' },
+    { quote: "One of Erick's standout strengths is his ability to leverage AI to solve problems and improve processes. He strengthened the support tools our team relies on every day.", name: 'Aldo Galleoti', role: 'Customer Service Lead', photo: photos.aldo },
+    { quote: 'His dedication to product quality, keen eye for detail and proactive approach consistently elevated the team’s performance.', name: 'Carlos Ortíz Sánchez', role: 'Technology Director, Apesa Software', photo: photos.carlos },
     { quote: 'He got direct exposure to the client and was able to interact with them. The client liked his work and he helped them whenever they needed it.', name: 'Darwin Batres', role: 'Lead Developer', photo: photos.darwin },
-    { quote: 'A tremendous professional who is always looking for solutions. We carried out projects that changed the way the organization operates.', name: 'Juan Orozco', role: 'GTM in Latam' },
-    { quote: 'He proved to be a valuable asset for any project, taking part in every aspect of it, including frontend and backend development.', name: 'Luis Cuestas', role: 'Lead Developer' },
-    { quote: 'Strong technical skills and a significant commitment to his responsibilities. His ability to tackle complex challenges contributed significantly to the success of our projects.', name: 'Rules Cube', role: 'Company' },
+    { quote: 'A tremendous professional who is always looking for solutions. We carried out projects that changed the way the organization operates.', name: 'Juan Orozco', role: 'GTM in Latam', photo: photos.juan },
+    { quote: 'He proved to be a valuable asset for any project, taking part in every aspect of it, including frontend and backend development.', name: 'Luis Cuestas', role: 'Lead Developer', photo: photos.luis },
+    { quote: 'Strong technical skills and a significant commitment to his responsibilities. His ability to tackle complex challenges contributed significantly to the success of our projects.', name: 'Rules Cube', role: 'Company', photo: photos.rulesCube },
   ],
   now: [
     { label: 'Building', text: 'Automation at Casa Médica.' },
@@ -607,6 +532,7 @@ const es: Content = {
     projects: 'Ver mi trabajo',
     loading: 'Cargando',
     resume: 'CV',
+    menu: { open: 'Abrir menú', close: 'Cerrar menú' },
     readMore: 'Abrir',
     readArticle: 'Abrir enlace',
     prevArticle: 'Anterior',
@@ -629,7 +555,10 @@ const es: Content = {
     archiveLabel: '... /Archivo ...',
     archiveTitle: 'Más proyectos',
     viewAll: 'Todos los proyectos en GitHub',
+    showMore: 'Ver más',
+    showLess: 'Ver menos',
     viewCase: 'Ver',
+    clientWork: 'Proyecto de cliente',
     processLabel: '... /Servicios ...',
     processTitle: 'Lo que hago',
     testimonialsLabel: '... /Testimonios ...',
@@ -643,6 +572,7 @@ const es: Content = {
         globeText: 'Trabajo remoto, con equipos en distintas zonas horarias.',
         cubeTitle: 'Stack técnico',
         cubeText: 'herramientas en seis roles',
+        spin: 'Girar el cubo',
         timeTitle: 'Hora local',
         day: 'de día',
         night: 'de noche',
@@ -658,78 +588,6 @@ const es: Content = {
         askText: 'Un asistente de IA que conoce mi trabajo. Elige una pregunta o haz la tuya.',
         askOpen: 'Abrir el chat',
       },
-      automate: {
-        title: 'Automatiza esto',
-        lead: 'Elige una tarea que todavía se hace a mano y mírala *competir contra su automatización*.',
-        manual: 'A mano',
-        auto: 'Automatizado',
-        run: 'Correr carrera',
-        again: 'Correr otra vez',
-        saved: 'ahorradas al mes',
-        perMonth: 'veces al mes',
-        note: 'Cifras típicas de mi trabajo con clientes; cada equipo es distinto.',
-        tasks: [
-          { id: 'report', name: 'Reporte semanal de ventas', manualMin: 95, autoSec: 42, runsPerMonth: 4, manual: ['Exportar CSV de 3 sistemas', 'Unirlos en Excel', 'Corregir formatos y duplicados', 'Armar las gráficas', 'Redactar el correo resumen', 'Enviarlo a 12 personas'], auto: [['Disparo programado', 'n8n'], ['Consulta SQL + API del CRM', 'Python'], ['Limpiar y unir', 'pandas'], ['Generar el PDF', 'Lambda'], ['Publicar en Slack + correo', 'Webhooks']] },
-          { id: 'qa', name: 'Prueba de regresión del checkout', manualMin: 180, autoSec: 210, runsPerMonth: 8, manual: ['Abrir el navegador e iniciar sesión', 'Agregar productos al carrito', 'Probar 6 métodos de pago', 'Revisar totales y correos', 'Repetir todo en móvil', 'Escribir el reporte de bugs'], auto: [['Se abre el pull request', 'GitHub Actions'], ['48 pruebas end-to-end', 'Playwright'], ['Pruebas de contrato de API', 'Postman'], ['Corrida en viewport móvil', 'Playwright'], ['Reporte + capturas en el PR', 'CI']] },
-          { id: 'triage', name: 'Clasificación de tickets de soporte', manualMin: 120, autoSec: 25, runsPerMonth: 22, manual: ['Leer cada ticket nuevo', 'Buscar al usuario en los logs', 'Adivinar la prioridad', 'Asignarlo a un equipo', 'Responder al cliente'], auto: [['Webhook de ticket nuevo', 'Zendesk'], ['Clasificar + prioridad', 'LLM + RAG'], ['Traer los logs del usuario', 'API de Datadog'], ['Enviar al equipo correcto', 'Jira'], ['Borrador de respuesta para revisar', 'MCP']] },
-        ],
-      },
-      mission: {
-        title: 'Centro de control',
-        lead: 'Mi actividad real en GitHub, *en vivo*. Nada de maquetas.',
-        live: 'En vivo',
-        activity: 'Actividad · últimos 12 meses',
-        feed: 'Últimos pushes',
-        languages: 'Lenguajes',
-        repos: 'repos públicos',
-        lastPush: 'último push',
-        pushed: 'push a',
-        loading: 'Conectando con GitHub…',
-        error: 'GitHub no responde en este momento.',
-        open: 'Abrir mi GitHub',
-        ago: ['ahora', 'min', 'h', 'd'],
-      },
-      plan: {
-        title: 'Arma tu proyecto',
-        lead: 'Marca lo que necesitas y obtén un *primer plan* en segundos: fases, stack y quién hace qué.',
-        ask: '¿Qué necesitas?',
-        empty: 'Elige al menos una opción para ver el plan.',
-        plan: 'Tu plan',
-        weeks: 'semanas',
-        week: 'Sem',
-        ongoing: 'continuo',
-        stack: 'Stack',
-        roles: 'Roles',
-        cta: 'Hablemos de esto',
-        note: 'Un punto de partida para conversar, no una cotización.',
-        kickoff: 'Descubrimiento y arquitectura',
-        handover: 'Lanzamiento y entrega',
-        needs: [
-          { id: 'web', label: 'Una app web o móvil', role: 'Software Engineer', stack: ['React', 'Node.js', 'TypeScript', 'AWS'], phases: [['Diseño y contratos de API', 1], ['Construir front end y back end', 3]] },
-          { id: 'qa', label: 'Pruebas automatizadas', role: 'Quality Assurance', stack: ['Playwright', 'Postman', 'GitHub Actions'], phases: [['Estrategia de pruebas y rutas críticas', 1], ['Suites E2E y de API en CI', 2]] },
-          { id: 'auto', label: 'Automatizaciones y agentes de IA', role: 'Automation Engineer', stack: ['n8n', 'Python', 'AWS Lambda', 'RAG'], phases: [['Mapear los flujos manuales', 1], ['Construir flujos y agentes', 2]] },
-          { id: 'support', label: 'Soporte de producción', role: 'Senior Product Engineer', stack: ['Datadog', 'CloudWatch', 'SQL'], phases: [['Observabilidad y runbooks', 1], ['Soporte L2/L3 y fixes de causa raíz', 0]] },
-        ],
-      },
-      incident: {
-        title: 'Incidente en vivo',
-        lead: 'Producción se cae a las 2 a.m. Así *lo llevo de la alerta al postmortem*.',
-        alert: 'ALERTA · el checkout devuelve 500',
-        resolved: 'Resuelto',
-        replay: 'Repetir incidente',
-        mttr: 'tiempo de resolución',
-        postmortem: 'Postmortem',
-        post: [['Causa raíz', 'La migración de ayer eliminó un índice en orders; las consultas del checkout esperaban bloqueos de fila.'], ['Fix', 'Índice reconstruido en concurrente, más reintentos con backoff en la llamada de pago.'], ['Prevención', 'Un check en CI que bloquea migraciones sin revisión de índices y una alerta sobre el tiempo de espera de bloqueos.']],
-        steps: [
-          { tool: 'Datadog', text: 'Errores 5xx del checkout suben 340%, p95 en 4.8 s', log: 'monitor: checkout.errors > threshold (02:14)' },
-          { tool: 'CloudWatch', text: 'El servicio de pagos está agotando el tiempo', log: 'TimeoutError: POST /pay exceeded 30000ms' },
-          { tool: 'Tracing', text: 'Cada request lenta espera a la base de datos', log: 'span db.orders.select_for_update 28.2s' },
-          { tool: 'SQL', text: 'Causa raíz: falta un índice tras una migración', log: 'EXPLAIN → Seq Scan on orders (rows=4.1M)' },
-          { tool: 'Hotfix', text: 'Reconstruir el índice, agregar reintento con backoff', log: 'CREATE INDEX CONCURRENTLY idx_orders_status…' },
-          { tool: 'Playwright', text: 'Suite del checkout en verde en staging', log: '48 passed (1.9m)' },
-          { tool: 'Deploy', text: 'Canary 10% → 100%, errores de vuelta a lo normal', log: 'rollout complete · 5xx 0.02%' },
-        ],
-      },
     },
     contactLabel: '... /Contacto ...',
     contactTitle: ['Trabajemos', 'juntos'],
@@ -741,29 +599,12 @@ const es: Content = {
     backToTop: 'Volver arriba',
     rights: 'Todos los derechos reservados',
     switchTo: (mode) => `Cambiar a modo ${mode}`,
-    proof: { manual: 'Manual', withAi: 'Con IA', live: 'En línea', checking: 'Verificando…', latency: (ms) => `respondió en ${ms} ms` },
+    proof: { manual: 'Manual', withAi: 'Con IA', live: 'En línea', checking: 'Verificando…', latency: (ms) => `respondió en ${ms} ms`, median: 'mediana de pings en vivo', saved: 'tiempo ahorrado' },
     story: { open: 'Ver caso', problem: 'Problema', solution: 'Solución', result: 'Resultado', visit: 'Visitar proyecto', close: 'Cerrar' },
-    workflow: {
-      title: 'Un flujo que automatizo',
-      caption: 'Llega un lead nuevo, un agente de IA lo califica, se actualiza el CRM y el equipo recibe el aviso. Nadie copia nada a mano.',
-      nodes: [['Webhook', 'lead nuevo'], ['Agente IA', 'califica'], ['API CRM', 'upsert'], ['Slack', 'avisa al equipo']],
-    },
-    services: {
-      live: 'v2.4.1 en producción',
-      gate: {
-        suites: [['UI · Playwright', '142 aprobados'], ['API · Postman', '86 aprobados'], ['E2E · Cypress', '38 aprobados'], ['Carga · JMeter', 'p95 240 ms']],
-        passed: 'Quality gate aprobado — listo para liberar',
-      },
-      hub: { core: 'Núcleo de negocio', caption: 'Un proceso, cuatro sistemas, una sola fuente de verdad.' },
-      stages: ['Diseño', 'Construcción', 'Verificación', 'Automatización'],
-      phases: ['Descubrir', 'Diseñar', 'Construir', 'Probar', 'Automatizar', 'Operar'],
-      lead: 'Lidero',
-      support: 'Apoyo',
-      spin: 'Girar',
-    },
     build: 'build exitoso',
     chat: {
       open: 'Pregúntale a mi portafolio',
+      hint: 'Pregúntale lo que sea sobre mi trabajo',
       title: 'Pregúntame lo que quieras',
       intro: '¡Hola! Soy el asistente de IA de Erick, un LLM alimentado con este portafolio. Pregúntame por mi experiencia, proyectos o stack.',
       placeholder: 'Escribe tu pregunta…',
@@ -801,12 +642,17 @@ const es: Content = {
   ],
   projects: [
     { ...projectsBase[0], summary: 'Extensión de Gmail que genera respuestas contextuales y con estilo usando IA.', metric: { value: '~40%', label: 'menos tiempo por respuesta' }, story: { problem: 'Escribir respuestas cuidadas a mano se llevaba buena parte de cada jornada.', solution: 'Una extensión de Gmail que lee el hilo y redacta una respuesta contextual en el tono elegido, con una API en Spring Boot que llama al LLM.', result: 'Cerca de 40% menos tiempo por respuesta; publicada en la Chrome Web Store.' } },
-    { ...projectsBase[1], summary: 'Plataforma para publicar y compartir artículos técnicos.', metric: { value: '30+', label: 'artículos publicados' }, story: { problem: 'Los desarrolladores necesitaban un lugar simple para publicar y compartir artículos técnicos.', solution: 'Un blog full-stack con front en React y una API GraphQL para artículos, autores y etiquetas.', result: 'Más de 30 artículos publicados, incluidas las guías de REST vs. GraphQL y Closures.' } },
-    { ...projectsBase[2], summary: 'Sistema de gestión de incidentes vehiculares para control operativo.', metric: { value: '25', label: 'usuarios activos' }, story: { problem: 'Los incidentes vehiculares vivían en hojas de cálculo y mensajes, sin una fuente única de verdad.', solution: 'Una app web en React, Node.js y MongoDB para registrar, asignar y dar seguimiento a cada incidente con su estado e historial.', result: '25 usuarios activos llevan el control operativo en ella.' } },
-    { ...projectsBase[3], summary: 'Sitio de una artista que muestra su trayectoria musical y actoral.', metric: { value: 'Live', label: 'sitio de artista' }, story: { problem: 'Una artista necesitaba un solo lugar para presentar su carrera musical y actoral.', solution: 'Un sitio rápido en React + Vite con Tailwind, construido alrededor de su obra, medios y contacto.', result: 'En línea como su vitrina profesional.' } },
-    { ...projectsBase[4], summary: 'Landing page de agencia que presenta un perfil profesional.', metric: { value: 'Live', label: 'landing de agencia' }, story: { problem: 'Una agencia de software necesitaba una landing que presentara su perfil con credibilidad.', solution: 'Una landing en Next.js + TypeScript con secciones de servicios claras y una identidad visual fuerte.', result: 'En línea como la landing de la agencia.' } },
+    { ...projectsBase[1], summary: 'Sistema de gestión de incidentes vehiculares para control operativo.', metric: { value: '25', label: 'usuarios activos' }, story: { problem: 'Los incidentes vehiculares vivían en hojas de cálculo y mensajes, sin una fuente única de verdad.', solution: 'Una app web en React, Node.js y MongoDB para registrar, asignar y dar seguimiento a cada incidente con su estado e historial.', result: '25 usuarios activos llevan el control operativo en ella.' } },
+    { ...projectsBase[2], client: { via: 'Yalo.ai', role: 'Senior Product Support Engineer', period: '2025 – 2026' }, summary: 'Agentes de IA conversacional y de voz en WhatsApp y Messenger, y las herramientas internas detrás de ellos.', metric: { value: '20+', label: 'clientes internacionales' }, story: { problem: 'Los agentes de IA de más de 20 clientes corrían sobre servicios distribuidos (AWS Lambda, Cloud Functions, webhooks) integrados con Salesforce, SAP y ERPs propios, y los incidentes escalados se resolvían a mano.', solution: 'Diseñé y mantuve agentes conversacionales y de voz, corregí servicios en producción en Lua, TypeScript, Python y Go, y construí herramientas de autoservicio con MCP y LLMs, además de automatización interna como Heimdall.', result: 'Incidentes resueltos más rápido, menos tickets de soporte e integraciones estables en las plataformas de Meta.' } },
+    { ...projectsBase[3], client: { via: 'Apesa Software', role: 'Lead Quality Automation Engineer', period: '2025' }, summary: 'Framework de automatización de pruebas para SPEI y CETES, integrado en GitLab CI/CD.', metric: { value: '12', label: 'ingenieros formados y liderados' }, story: { problem: 'Sistemas financieros con miles de transacciones diarias se probaban a mano, sin automatización en el ciclo de releases.', solution: 'Diseñé el framework de automatización y el plan de pruebas para apps en Angular, .NET y Blazor, lo integré en GitLab CI/CD con reportes y notificaciones, y sumé pruebas de API y rendimiento con Postman, Newman y JMeter.', result: 'SPEI y CETES automatizados en un trimestre, y un equipo de 12 ingenieros que pasó de pruebas manuales a estándares de automatización que siguieron después de mi salida.' } },
+    { ...projectsBase[4], client: { via: 'Rules Cube', role: 'Pega System Architect · QA Lead', period: '2021 – 2025' }, summary: 'Aplicaciones en Pega y QA de punta a punta para una aseguradora global y su negocio de reaseguro de vida en EE. UU.', metric: { value: '1000+', label: 'casos procesados al día' }, story: { problem: 'Una aseguradora multinacional necesitaba sus productos de salud y de reaseguro de vida en EE. UU. sobre Pega, con cumplimiento y calidad estrictos en desarrollo, staging y producción.', solution: 'Diseñé la gestión de casos en Pega con arquitectura de negocio center-out, migré datos con ETL y lideré QA: planes de prueba, pruebas automatizadas y manuales, Scrum y prácticas DevOps.', result: 'Releases en cumplimiento con menos defectos, una operación estable tras el lanzamiento sin incidencias de datos, y renovaciones de proyecto para la consultora.' } },
+    { ...projectsBase[5], client: { via: 'Global Human Capital', role: 'Front-End Software Engineer', period: '2020' }, summary: 'Landing pages responsivas y con datos en vivo para una suite de productos grande.', metric: { value: '20+', label: 'landing pages entregadas' }, story: { problem: 'Una suite de productos grande necesitaba muchas landing pages, rápido, pixel-perfect y con datos en vivo.', solution: 'Construí páginas responsivas en JSP y JavaScript alimentadas por APIs, integradas con Laravel, con code splitting, lazy loading y buenas prácticas de SEO.', result: 'Más de 20 landing pages entregadas y una baja notable en tickets de UI.' } },
   ],
   archive: [
+    { ...archiveBase[12], tagline: 'Blog técnico', description: 'Plataforma para publicar y compartir artículos técnicos.', story: { problem: 'Los desarrolladores necesitaban un lugar simple para publicar y compartir artículos técnicos.', solution: 'Un blog full-stack con front en React y una API GraphQL para artículos, autores y etiquetas.', result: 'Más de 30 artículos publicados, incluidas las guías de REST vs. GraphQL y Closures.' } },
+    { ...archiveBase[13], tagline: 'Sitio de artista', description: 'Sitio de una artista que muestra su trayectoria musical y actoral.', story: { problem: 'Una artista necesitaba un solo lugar para presentar su carrera musical y actoral.', solution: 'Un sitio rápido en React + Vite con Tailwind, construido alrededor de su obra, medios y contacto.', result: 'En línea como su vitrina profesional.' } },
+    { ...archiveBase[14], tagline: 'App de agencia', description: 'La presencia digital de una agencia de software: servicios, trabajo y contacto en una app.', story: { problem: 'Una agencia de software necesitaba una presencia digital que presentara sus servicios y su trabajo con credibilidad.', solution: 'Una app en Next.js + TypeScript con secciones de servicios claras, su trabajo y una identidad visual fuerte.', result: 'En línea como la presencia digital de la agencia.' } },
+    { ...archiveBase[15], tagline: 'Banca · vía NEORIS', description: 'Banca en línea para una gran institución financiera.', story: { problem: 'Un banco grande necesitaba releases constantes en su plataforma web y corregir defectos complejos del lado del servidor.', solution: 'Construí componentes reutilizables en React y TypeScript, corregí problemas en C# (envío de correos, procesamiento de datos, casos límite) y optimicé consultas en SQL Server.', result: 'Releases más confiables y menos inconsistencias de datos en la plataforma.' } },
     { ...archiveBase[8], tagline: 'Grabador de pantalla gratis', description: 'App web para grabar la pantalla, para quien no quiere pagar por una herramienta en línea.', story: { problem: 'Los grabadores de pantalla en línea esconden lo básico detrás de pagos, marcas de agua o registros.', solution: 'Un grabador de pantalla que corre por completo en el navegador, hecho con JavaScript, HTML y CSS.', result: 'Una utilidad gratuita, en línea en Vercel, para quien necesite grabar su pantalla.' } },
     { ...archiveBase[9], tagline: 'Convertidor multimedia', description: 'Convierte imágenes, audio y video en el navegador, gratis y sin restricciones.', story: { problem: 'Convertir archivos suele implicar subirlos a sitios llenos de límites, anuncios o pagos.', solution: 'Un convertidor en línea de imágenes, audio y video, hecho con Next.js y Shadcn/ui sobre ffmpeg.', result: 'Conversión multimedia gratis y sin restricciones, en línea en Vercel.' } },
     { ...archiveBase[0], tagline: 'Extensión de VS Code', description: 'Extensión de tareas para Visual Studio Code, disponible en el marketplace.', story: { problem: 'Las tareas pequeñas de código vivían en notas fuera del editor y se perdían.', solution: 'Una extensión para Visual Studio Code que mantiene la lista de pendientes dentro del editor, junto al código.', result: 'Publicada en el marketplace de VS Code, con instrucciones en GitHub.' } },
@@ -847,10 +693,10 @@ const es: Content = {
     },
     {
       id: 4,
-      title: 'Threefolio — Canvas en Three.js',
-      description: 'Un plano interactivo en Three.js animado con GSAP para crear un hero dinámico.',
-      href: 'https://threefolio.vercel.app/',
-      tag: 'Experimento',
+      title: 'App de agencia de software',
+      description: 'La presencia digital de una agencia de software: servicios, trabajo y contacto en una app rápida con Next.js y TypeScript.',
+      href: 'https://rodri-labs.vercel.app/',
+      tag: 'Producto',
       meta: 'Live',
     },
     {
@@ -870,13 +716,13 @@ const es: Content = {
   ],
   skillGroups,
   jobs: [
-    { ...jobsBase[0], period: '2026 — Hoy', role: 'Automation Engineer', highlights: [] },
-    { ...jobsBase[1], period: 'Jun 2025 — 2026', role: 'Senior Product Engineer', highlights: ['Agentes de IA para más de 20 clientes internacionales.', 'Herramientas de automatización con IA: 60% menos trabajo manual.'] },
-    { ...jobsBase[2], period: 'Feb — May 2025', role: 'QA Lead Engineer', highlights: ['Lideré la transformación de QA automation.', 'Framework en Playwright y CI/CD en GitLab; mentoría a 12 ingenieros.'] },
-    { ...jobsBase[3], period: 'Ene 2021 — Feb 2025', role: 'QA / Pega System Architect', highlights: ['Apps Pega empresariales con más de 1000 casos diarios.', 'Liderazgo de equipos de QA; certificado Pega System y Business Architect.'] },
-    { ...jobsBase[4], period: '2020 — 2021', role: 'Front-End Developer', highlights: ['Más de 20 landing pages responsivas.', 'Rendimiento con lazy loading y code splitting.'] },
-    { ...jobsBase[5], period: '2019 — 2020', role: 'Full-Stack Engineer', highlights: ['Apps bancarias con React, TypeScript y .NET.'] },
-    { ...jobsBase[6], period: '2018 — 2019', role: 'MIS Engineer', highlights: ['Automatización de reportes con VBA, SQL y Power BI.'] },
+    { ...jobsBase[0], period: '2026 — Hoy', role: 'Automation Engineer', highlights: ['Automatización de procesos y flujos internos.', 'Agentes conversacionales de IA para clientes.', 'Integraciones de WhatsApp con Meta Business API.'] },
+    { ...jobsBase[1], period: 'Jun 2025 — 2026', role: 'Senior Product Engineer', highlights: ['Agentes de IA para más de 20 clientes.', 'Automatización con IA: 60% menos trabajo manual.', 'Soporte L2/L3 en Lua, TypeScript, Python y Go.'] },
+    { ...jobsBase[2], period: 'Feb — May 2025', role: 'QA Lead Engineer', highlights: ['SPEI y CETES automatizados en un trimestre.', 'Framework en Playwright con GitLab CI/CD.', 'Capacitación y mentoría a 12 ingenieros.'] },
+    { ...jobsBase[3], period: 'Ene 2021 — Feb 2025', role: 'QA / Pega System Architect', highlights: ['Apps Pega con más de 1000 casos diarios.', 'Liderazgo de QA en 5 proyectos de clientes.', 'Certificado Pega System y Business Architect.'] },
+    { ...jobsBase[4], period: '2020 — 2021', role: 'Front-End Developer', highlights: ['Más de 20 landing pages responsivas.', 'Lazy loading y code splitting para velocidad.', 'Menos tickets de UI corrigiendo defectos a tiempo.'] },
+    { ...jobsBase[5], period: '2019 — 2020', role: 'Full-Stack Engineer', highlights: ['App web bancaria con React y TypeScript.', 'Correcciones server-side en C# y SQL Server.', 'Entornos en Azure, SharePoint y Hyper-V.'] },
+    { ...jobsBase[6], period: '2018 — 2019', role: 'MIS Engineer', highlights: ['Soluciones MIS para procesar datos.', 'Automatización de reportes con VBA y Power BI.', 'Soporte técnico a clientes bancarios premier.'] },
   ],
   education: [
     'Maestría en Administración de Negocios e Ingeniería de Calidad (en curso)',
@@ -899,14 +745,15 @@ const es: Content = {
     { slug: 'mechatronics-engineer', title: 'Mechatronics Engineer', stack: roleStacks.mechatronics, signal: 'Ingeniería entre software, electrónica y sistemas físicos', description: 'Conecto software, electrónica y mecánica para crear soluciones automatizadas con control, sensores y hardware inteligente.' },
   ],
   testimonials: [
+    { quote: 'Erick llegó a Casa Médica para automatizar procesos y lo está logrando: integró nuestros canales de WhatsApp con agentes conversacionales, lo que aumentó nuestra tasa de conversión y redujo el tiempo de respuesta a nuestros clientes. Ha sido muy valioso para nuestro crecimiento.', name: 'Manuel Centeno', role: 'CEO, Casa Médica', photo: photos.manuel },
     { quote: 'Erick realizó QA para un proyecto de actualización de la plataforma Pega con un resultado exitoso. Tomó la iniciativa para entender rápido la aplicación del cliente, creando y ejecutando casos de prueba.', name: 'Sam Gharnagh', role: 'Vice President', photo: photos.sam },
     { quote: 'Su atención al detalle, su capacidad analítica y su compromiso con la calidad se notaron en cada proyecto. Erick es un activo valioso para cualquier equipo.', name: 'Madhu Chalamaiah', role: 'Lead Developer', photo: photos.madhu },
-    { quote: 'Una de sus mayores fortalezas es usar IA para resolver problemas y mejorar procesos. Fortaleció las herramientas de soporte que nuestro equipo usa todos los días.', name: 'Aldo Galleoti', role: 'Customer Service Lead' },
-    { quote: 'Su compromiso con la calidad, su ojo para el detalle y su proactividad elevaron consistentemente el desempeño del equipo.', name: 'Carlos Ortíz Sánchez', role: 'Technology Director, Apesa Software' },
+    { quote: 'Una de sus mayores fortalezas es usar IA para resolver problemas y mejorar procesos. Fortaleció las herramientas de soporte que nuestro equipo usa todos los días.', name: 'Aldo Galleoti', role: 'Customer Service Lead', photo: photos.aldo },
+    { quote: 'Su compromiso con la calidad, su ojo para el detalle y su proactividad elevaron consistentemente el desempeño del equipo.', name: 'Carlos Ortíz Sánchez', role: 'Technology Director, Apesa Software', photo: photos.carlos },
     { quote: 'Tuvo exposición directa con el cliente y supo interactuar con él. Al cliente le gustó su trabajo y lo ayudó cada vez que lo necesitó.', name: 'Darwin Batres', role: 'Lead Developer', photo: photos.darwin },
-    { quote: 'Un profesional tremendo que siempre busca soluciones. Hicimos proyectos que cambiaron la forma en que opera la organización.', name: 'Juan Orozco', role: 'GTM in Latam' },
-    { quote: 'Demostró ser un activo valioso para cualquier proyecto; participó en todos sus aspectos, incluido el desarrollo frontend y backend.', name: 'Luis Cuestas', role: 'Lead Developer' },
-    { quote: 'Sólidas habilidades técnicas y un gran compromiso con sus responsabilidades. Su capacidad para resolver retos complejos contribuyó al éxito de nuestros proyectos.', name: 'Rules Cube', role: 'Empresa' },
+    { quote: 'Un profesional tremendo que siempre busca soluciones. Hicimos proyectos que cambiaron la forma en que opera la organización.', name: 'Juan Orozco', role: 'GTM in Latam', photo: photos.juan },
+    { quote: 'Demostró ser un activo valioso para cualquier proyecto; participó en todos sus aspectos, incluido el desarrollo frontend y backend.', name: 'Luis Cuestas', role: 'Lead Developer', photo: photos.luis },
+    { quote: 'Sólidas habilidades técnicas y un gran compromiso con sus responsabilidades. Su capacidad para resolver retos complejos contribuyó al éxito de nuestros proyectos.', name: 'Rules Cube', role: 'Empresa', photo: photos.rulesCube },
   ],
   now: [
     { label: 'Construyendo', text: 'Automatización en Casa Médica.' },

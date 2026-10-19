@@ -1,0 +1,160 @@
+/* ---------- Project proofs v2 (override sections.css) ---------- */
+.proof { flex: 0 1 230px; }
+/* Race: bar length = time spent; both fill at the same speed, so the AI one ends first. */
+.proof--race { gap: 7px; }
+.proof__lane { grid-template-columns: 52px 1fr 36px; }
+.proof__lane i { height: 8px; background: transparent; }
+.proof__lane i::after {
+  inset: 0 auto 0 0;
+  width: var(--w);
+  background: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+.proof__lane:last-of-type i::after { background: var(--glow); }
+.proof__lane i::before { content: ''; position: absolute; inset: 3.5px 0 auto; height: 1px; background: var(--line); }
+.proof__delta { justify-self: end; margin-top: 2px; font-size: 11px; opacity: 0; transition: opacity 0.4s 1.9s; }
+.proof__delta b { padding: 2px 7px; border-radius: 99px; background: color-mix(in srgb, var(--glow) 18%, transparent); color: var(--text); font-weight: 600; }
+.proof--race.is-on .proof__delta { opacity: 1; }
+
+/* Count: one glyph per unit. */
+.proof--count { grid-template-columns: repeat(10, 14px); gap: 5px 6px; }
+.proof--count svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 0.3s, fill 0.3s, transform 0.4s var(--ease-out);
+  transition-delay: calc(var(--i) * 45ms);
+}
+.proof--count svg.is-solid { fill: var(--line); stroke: none; }
+.proof--count.is-on svg { stroke: var(--glow); transform: translateY(-1px); }
+.proof--count.is-on svg.is-solid { fill: var(--glow); stroke: none; }
+
+/* Live: real pings to the site, plotted as bars. */
+.proof--live { display: grid; justify-items: end; gap: 8px; }
+.proof--live p { display: inline-flex; align-items: center; gap: 8px; }
+.proof--live p b { font-weight: 600; color: var(--text); }
+.proof__spark { display: flex; align-items: flex-end; gap: 4px; height: 28px; }
+.proof__spark i {
+  width: 10px;
+  height: calc(4px + var(--h) * 24px);
+  border-radius: 3px 3px 1px 1px;
+  background: var(--line);
+  transition: height 0.5s var(--ease-out), background 0.3s;
+}
+.proof__spark i.is-in { background: var(--glow); }
+
+@media (max-width: 860px) {
+  .proof--live { justify-items: start; }
+  .proof__delta { justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .proof--count svg, .proof__delta, .proof__spark i { transition: none !important; }
+}
+
+/* Card fit: client cards (attribution line + 5-tag stack) overflowed the 378px card and lost their footer. */
+@media (min-width: 861px) {
+  .project { height: min(377px, calc(100vh - 150px)); }
+  .project__body { gap: 12px; }
+  .project__metric { padding: 12px 0; }
+  /* Tags wrap inside their own column, so the case button keeps its row instead of adding one. */
+  .project__foot { flex-wrap: nowrap; align-items: flex-start; }
+  .project__stack { flex: 1; gap: 5px; }
+  .project__stack li { padding: 5px 10px; }
+  .project__open { flex: none; }
+}
+@media (max-width: 860px) {
+  .project__art { height: 300px; }
+}
+
+/* Metric: number and its proof share a row; the label runs full width underneath. */
+.project__metric { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 2px 20px; }
+.project__metric > p { grid-column: 1 / -1; }
+.project__metric .proof { justify-self: end; width: 100%; max-width: 230px; }
+@media (max-width: 860px) {
+  .project__metric { grid-template-columns: 1fr; }
+  .project__metric .proof { justify-self: start; grid-row: 3; margin-top: 10px; }
+}
+
+/* Project art: the mockups carry their own shadows, so they fill the poster instead of floating small over a floor shadow. */
+.project__art--poster::after { content: none; }
+.project__art--poster img { padding: 14px 6px; scale: 1.08; filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.18)); }
+
+@media (max-width: 860px) {
+  /* Trusted brands sits centred between the articles and Recent projects: same gap above and below. */
+  .brands { margin-top: 88px; }
+  .projects { padding-top: 88px; }
+}
+
+@media (max-width: 860px) {
+  /* Every section heading centred on mobile: label, title and lead/action. */
+  .section-head--split { justify-items: center; text-align: center; }
+  .section-head--split .label,
+  .section-head--split .section-title,
+  .section-head--split .section-head__lead,
+  .section-head--split .section-head__aside { justify-self: center; text-align: center; }
+}
+
+@media (max-width: 860px) {
+  /* Contact: the short closing pieces are centred; the form stays left-aligned so its fields scan easily. */
+  .contact__row { align-items: center; }
+  .contact__info { align-items: center; text-align: center; }
+  .contact__text { margin-inline: auto; }
+  .contact__available { display: block; max-width: 300px; text-align: center; }
+  .contact__available .contact__dot { display: inline-block; margin-right: 10px; vertical-align: middle; }
+  /* Email on its own line, the copy / CV buttons side by side under it. */
+  .contact__email { justify-content: center; gap: 12px 10px; }
+  .contact__email > a:first-child { flex-basis: 100%; text-align: center; border-bottom: 0; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 6px; }
+  .contact__socials { justify-content: center; }
+  .footer { flex-direction: column; justify-content: center; text-align: center; gap: 10px; }
+  .contact-form__send { width: 100%; }
+  .contact-form__foot { justify-content: center; text-align: center; }
+}
+
+/* Archive "View more": mobile only; desktop always lists every project. */
+.archive__more { display: none; }
+@media (max-width: 860px) {
+  .archive__list:not(.is-expanded) .archive__extra { display: none; }
+  .archive__more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--text);
+    font: 13px var(--mono);
+  }
+  .archive__more svg { rotate: 90deg; transition: rotate 0.35s var(--ease-out); }
+  .archive__more.is-open svg { rotate: -90deg; }
+}
+
+/* v1 spotlight border (useSpotlight in motion.ts) on What I do, About and Beyond the code: a 2px ring masked out of a
+   radial glow at the pointer. Bento tiles clip their content (photo, 3D scenes), so their ring sits on the inner edge. */
+.svc-cube__card::after,
+.bento--f .bento__tile:not(.bento__quote)::after,
+.lab-bento__tile::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  padding: 2px;
+  border-radius: inherit;
+  background: radial-gradient(circle 220px at var(--mx, -999px) var(--my, -999px), var(--text), transparent);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.svc-cube__grid.is-lit .svc-cube__card::after,
+.bento--f.is-lit .bento__tile::after,
+.lab-bento.is-lit .lab-bento__tile::after { opacity: 1; }
+.bento--f .bento__tile { position: relative; }
+.bento--f .bento__tile::after,
+.lab-bento__tile::after { inset: 0; z-index: 3; }

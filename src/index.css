@@ -1,6 +1,6 @@
 :root {
-  --mono: 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
-  --sans: 'Open Sans', system-ui, -apple-system, sans-serif;
+  --mono: 'Fira Code Variable', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --sans: 'Open Sans Variable', 'Open Sans', system-ui, -apple-system, sans-serif;
   /* Hero/display font. Other candidates we liked are recorded in docs/fonts.md. */
   --display: 'Syne', system-ui, sans-serif;
   --display-weight: 600;
@@ -98,6 +98,8 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--sans);
+  /* Syne defaults to old-style figures (0-2 short, 3/4/5/7/9 drop below the baseline); keep every digit the same height. */
+  font-variant-numeric: lining-nums;
   -webkit-font-smoothing: antialiased;
   transition: background 0.3s, color 0.3s;
 }
@@ -455,139 +457,6 @@ em {
   display: grid;
   gap: 12px;
 }
-.bento--a {
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-areas:
-    'intro intro photo photo'
-    's1    s2    photo photo'
-    's3    s4    photo photo'
-    'quote quote quote quote'
-    'k1    k1    k2    k2'
-    'k3    k3    k4    k4';
-}
-.bento--b {
-  grid-template-columns: repeat(12, 1fr);
-  grid-template-areas:
-    'photo photo photo photo intro intro intro intro intro intro intro intro'
-    'photo photo photo photo s1    s1    s2    s2    s3    s3    s4    s4'
-    'photo photo photo photo quote quote quote quote quote quote quote quote'
-    'k1    k1    k1    k2    k2    k2    k3    k3    k3    k4    k4    k4';
-}
-.bento--b .bento__photo { min-height: 420px; }
-.bento--c {
-  grid-template-columns: 1fr 1.5fr 1fr;
-  grid-template-areas:
-    'k1 photo s1'
-    'k2 photo s2'
-    'k3 intro s3'
-    'k4 quote s4';
-}
-.bento--c .bento__photo { min-height: 300px; }
-.bento--c .bento__stat { align-items: flex-end; text-align: right; }
-.bento--d {
-  grid-template-columns: repeat(12, 1fr);
-  grid-template-areas:
-    'photo photo photo photo photo intro intro intro intro intro intro intro'
-    'photo photo photo photo photo stats stats stats stats stats stats stats'
-    'k1    k1    k1    k1    k1    k1    k1    k1    k1    k1    k1    k1'
-    'k2    k2    k2    k2    k2    k2    k2    k2    k2    k2    k2    k2'
-    'k3    k3    k3    k3    k3    k3    k3    k3    k3    k3    k3    k3'
-    'k4    k4    k4    k4    k4    k4    k4    k4    k4    k4    k4    k4'
-    'quote quote quote quote quote quote quote quote quote quote quote quote';
-}
-.bento--d .bento__photo { min-height: 460px; }
-.bento--d .bento__intro {
-  display: grid;
-  align-content: end;
-  padding: 32px;
-  font-size: clamp(20px, 2.1vw, 28px);
-  line-height: 1.35;
-  letter-spacing: -0.01em;
-  text-wrap: pretty;
-}
-.bento--d .bento__intro em { font-style: normal; }
-/* One strip, four cells: the numbers read as a single statement instead of four floating tiles. */
-.bento--d .bento__stats {
-  grid-area: stats;
-  display: grid;
-  grid-template-areas: 's1 s2 s3 s4';
-  grid-template-columns: repeat(4, 1fr);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: var(--card-side-bg);
-  overflow: hidden;
-}
-.bento--d .bento__stat {
-  padding: 28px 24px 24px;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  gap: 18px;
-}
-.bento--d .bento__stat + .bento__stat { border-left: 1px solid var(--line); }
-.bento--d .stat__value { font-size: clamp(30px, 3vw, 42px); }
-/* Skills as full-width rows: index · area · chips, so uneven lists never leave empty tile space. */
-.bento--d .skill {
-  display: grid;
-  grid-template-columns: 36px minmax(150px, 220px) 1fr;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
-}
-.bento--d .skill__title { font-size: 18px; }
-.bento--d .bento__quote {
-  display: flex;
-  gap: 18px;
-  align-items: flex-start;
-  padding: 28px 32px;
-  font-size: clamp(15px, 1.5vw, 19px);
-  background: none;
-}
-.bento--d .bento__quote::before {
-  content: '“';
-  font-family: var(--display);
-  font-size: 56px;
-  line-height: 0.85;
-  color: var(--muted);
-}
-.bento--d .bento__quote::after { content: none; }
-/* E: tall portrait on the right anchors the block; everything else reads top-down on the left. */
-.bento--e {
-  grid-template-columns: repeat(12, 1fr);
-  grid-template-areas:
-    'intro intro intro intro intro intro intro intro photo photo photo photo'
-    's1    s1    s2    s2    s3    s3    s4    s4    photo photo photo photo'
-    'k1    k1    k1    k1    k2    k2    k2    k2    photo photo photo photo'
-    'k3    k3    k3    k3    k4    k4    k4    k4    photo photo photo photo'
-    'quote quote quote quote quote quote quote quote quote quote quote quote';
-}
-.bento--e .bento__photo { min-height: 520px; }
-/* The source is square with the face ~33% from the left: pin that point to the tile's centre at any width. */
-@media (min-width: 861px) {
-  .bento--e .about__photo {
-    inset: 0 auto auto 50%;
-    width: auto;
-    aspect-ratio: 1;
-    translate: -32.7% 0;
-  }
-}
-.bento--e .bento__intro {
-  padding: 28px;
-  font-size: clamp(18px, 1.8vw, 24px);
-  line-height: 1.4;
-  text-wrap: pretty;
-}
-.bento--e .bento__stat { gap: 22px; }
-.bento--e .stat__value { font-size: clamp(28px, 2.8vw, 40px); }
-.bento--e .skill { gap: 12px; }
-.bento--e .skill__title { font-size: 17px; }
-.bento--e .bento__quote {
-  padding: 26px 28px;
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-accent);
-  font-size: clamp(14px, 1.4vw, 17px);
-}
 /* F: big square-ish photo with the quote laid over it (both share the 'photo' area). */
 .bento--f {
   grid-template-columns: repeat(12, 1fr);
@@ -646,13 +515,13 @@ em {
   position: absolute;
   inset: 0;
   width: 100%;
-  height: 100%;
+  height: 138%;
   object-fit: cover;
-  object-position: 50% 20%;
-  filter: grayscale(1) contrast(1.05);
-  transition: scale 1.2s var(--ease-out), filter 0.6s;
+  object-position: 50% -16%;
+  /* mix-blend-mode: luminosity; */
+  transition: scale 1.2s var(--ease-out);
 }
-.bento__photo:hover .about__photo { scale: 1.05; filter: grayscale(0) contrast(1.05); }
+.bento__photo:hover .about__photo { scale: 1.03; mix-blend-mode: normal; }
 .bento__now {
   position: absolute;
   left: 14px;
@@ -687,33 +556,6 @@ em {
   100% { box-shadow: 0 0 0 0 rgba(61, 220, 132, 0); }
 }
 @media (prefers-reduced-motion: reduce) { .bento__now i { animation: none; } }
-
-.skill {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  transition: border-color 0.25s;
-}
-.skill:hover { border-color: var(--hover-border); }
-.skill__index { font-family: var(--mono); font-size: 11px; color: var(--muted); }
-.skill__title { font-size: 15px; }
-.skill__items {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  list-style: none;
-}
-.skill__items li {
-  padding: 4px 9px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  font-family: var(--mono);
-  font-size: 11px;
-  line-height: 1.4;
-  color: var(--muted);
-  transition: color 0.25s, border-color 0.25s;
-}
-.skill:hover .skill__items li { color: var(--text); border-color: var(--hover-border); }
 
 /* ---------- Work ---------- */
 .work {
@@ -781,28 +623,11 @@ em {
   .card__media { height: 200px; }
   .card__actions { margin-top: 20px; }
   .about { padding-top: 120px; }
-  .bento--a,
-  .bento--b,
-  .bento--c,
-  .bento--e,
   .bento--f {
     grid-template-columns: repeat(2, 1fr);
     grid-template-areas: 'intro intro' 'photo photo' 's1 s2' 's3 s4' 'quote quote' 'k1 k1' 'k2 k2' 'k3 k3' 'k4 k4';
   }
   .bento--f { grid-template-areas: 'intro intro' 'photo photo' 's1 s2' 's3 s4' 'quote quote'; }
-  .bento--d {
-    grid-template-columns: 1fr;
-    grid-template-areas: 'photo' 'intro' 'stats' 'k1' 'k2' 'k3' 'k4' 'quote';
-  }
-  .bento--d .bento__photo { min-height: 0; aspect-ratio: 4 / 5; }
-  .bento--d .bento__intro { padding: 22px 20px; }
-  .bento--d .bento__stats { grid-template-areas: 's1 s2' 's3 s4'; grid-template-columns: repeat(2, 1fr); }
-  .bento--d .bento__stat { padding: 20px; }
-  .bento--d .bento__stat:nth-child(3) { border-left: 0; }
-  .bento--d .bento__stat:nth-child(n + 3) { border-top: 1px solid var(--line); }
-  .bento--d .skill { grid-template-columns: 28px 1fr; gap: 12px; padding: 18px 20px; }
-  .bento--d .skill__items { grid-column: 1 / -1; }
-  .bento--d .bento__quote { padding: 22px 20px; }
   .bento__photo { min-height: 0; aspect-ratio: 4 / 3; }
   .bento__tile { padding: 18px 20px; }
   .work__row {
@@ -810,4 +635,93 @@ em {
     gap: 4px;
     padding: 16px var(--gutter);
   }
+}
+
+/* ---------- Mobile menu (Header.tsx) ---------- */
+.menu-toggle { display: none; position: relative; z-index: 31; width: 38px; height: 38px; border: 1px solid var(--line); color: var(--text); }
+.menu-toggle i {
+  position: absolute;
+  left: 11px;
+  width: 14px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: currentColor;
+  transition: transform 0.35s var(--ease-out, ease), opacity 0.2s;
+}
+.menu-toggle i:nth-child(1) { top: 13px; }
+.menu-toggle i:nth-child(2) { top: 18px; }
+.menu-toggle i:nth-child(3) { top: 23px; }
+.menu-toggle.is-open i:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+.menu-toggle.is-open i:nth-child(2) { opacity: 0; }
+.menu-toggle.is-open i:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+.menu {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 120px 28px 40px;
+  background: var(--frame);
+  animation: menu-in 0.35s var(--ease-out, ease);
+}
+.menu[hidden] { display: none; }
+.menu nav { display: flex; flex-direction: column; }
+.menu nav a {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--display);
+  font-weight: var(--display-weight);
+  font-size: 32px;
+  line-height: 1.1;
+  color: var(--text);
+  animation: menu-link 0.45s var(--ease-out, ease) both;
+  animation-delay: calc(0.05s + var(--i) * 0.05s);
+}
+.menu nav a span { font: 12px var(--mono); color: var(--muted); }
+.menu__resume {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 22px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 14px;
+}
+@keyframes menu-in { from { opacity: 0; } }
+@keyframes menu-link { from { opacity: 0; transform: translateY(12px); } }
+
+@media (max-width: 860px) {
+  .menu-toggle { display: grid; }
+  .header__end { gap: 12px; }
+  /* Same rhythm between the three hero lines: role, CTA, "Engineer". */
+  .hero__row { gap: 24px; }
+  .hero__row--bottom { margin-top: 24px; gap: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu, .menu nav a { animation: none; }
+}
+.menu__foot { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.menu__lang { display: flex; padding: 4px; border: 1px solid var(--line); border-radius: 999px; }
+.menu__lang button { min-width: 52px; height: 38px; padding: 0 14px; border-radius: 999px; font-size: 14px; color: var(--muted); transition: background 0.2s, color 0.2s; }
+.menu__lang button.is-active { background: var(--accent); color: var(--on-accent); }
+.menu-open .chat-fab { opacity: 0; pointer-events: none; }
+@media (max-width: 860px) {
+  /* The language switch lives in the menu on mobile. */
+  .header .lang { display: none; }
+}
+
+@media (max-width: 860px) {
+  /* minmax(0, 1fr): no tile's content (e.g. the "now" badge) can widen the grid past the frame. */
+  .bento--f { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* The photo is a portrait: give it a portrait tile and frame the face instead of the desktop crop. */
+  .bento--f .bento__photo { min-height: 0; aspect-ratio: 4 / 5; }
+  .about__photo { height: 135%; object-position: 50% 91%; }
+  .bento--f .bento__now { top: auto; bottom: 14px; }
 }

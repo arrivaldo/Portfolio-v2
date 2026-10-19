@@ -1,6 +1,6 @@
 // "Ask my portfolio" — Vercel function (Web Request/Response). Also served in dev by the plugin in vite.config.ts.
 // Needs GEMINI_API_KEY in the environment (Vercel project settings, or .env.local for `npm run dev`).
-import { content, type Lang } from '../src/data'
+import { content, type Lang } from '../src/data.js'
 
 const MODEL = 'gemini-3.5-flash'
 const MAX_QUESTION = 500
