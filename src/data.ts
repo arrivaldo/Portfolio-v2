@@ -260,7 +260,7 @@ const en: Content = {
   profile: {
     ...profile,
     role: [['Software', 'Automation', 'Quality', 'Solutions'], 'Engineer'],
-    goal: 'Mechatronic Engineer with experience in *Software Development*, *QA Engineering* and *Automation*.',
+    goal: "Hi, I'm Erick Bárcena, a México-based engineer solving complex challenges through *technology*, *automation*, and *innovation*.",
     intro: "Hello! I'm Erick, a *Mechatronic Engineer* building software, automation and AI.\n*9+ years* across *22+ international projects*.",
     quote: 'Engineering is less about what you know and more about what you can figure out.',
     status: 'Currently Automation Engineer at Casa Médica',
@@ -515,7 +515,7 @@ const es: Content = {
   profile: {
     ...profile,
     role: [['Software', 'Automation', 'Quality', 'Solutions'], 'Engineer'],
-    goal: 'Ingeniero Mecatrónico con experiencia en *Desarrollo de Software*, *QA Engineering* y *Automatización*.',
+    goal: 'Hola, soy Erick Bárcena, ingeniero en México que resuelve retos complejos con *tecnología*, *automatización* e *innovación*.',
     intro: '¡Hola! Soy Erick, *Ingeniero Mecatrónico* que construye software, automatización e IA.\n*Más de 9 años* en *más de 22 proyectos internacionales*.',
     quote: 'La ingeniería trata menos de lo que sabes y más de lo que eres capaz de resolver.',
     status: 'Actualmente Automation Engineer en Casa Médica',

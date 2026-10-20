@@ -34,9 +34,9 @@ export function Work() {
     <section className="work" id="experience">
       <SectionHead label={t.ui.workLabel} title={t.ui.workTitle} lead={<Rich text={t.ui.workIntro} />} />
 
-      <ul className="work__list" onPointerEnter={() => setHovering(true)} onPointerLeave={() => setHovering(false)}>
+      <ul className="work__list" data-reveal-rows=".work__row" onPointerEnter={() => setHovering(true)} onPointerLeave={() => setHovering(false)}>
         {t.jobs.map((job, i) => (
-          <li key={job.company} className={`work__row${i === active ? ' is-active' : ''}`} onPointerEnter={() => setActive(i)} data-reveal>
+          <li key={job.company} className={`work__row${i === active ? ' is-active' : ''}`} onPointerEnter={() => setActive(i)}>
             <div className="work__period">
               {job.period}
               <small>{hash(job.company)}</small>

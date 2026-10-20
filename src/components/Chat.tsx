@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import { useLang } from '../i18n'
 import { onIntro } from '../motion'
 import { ChatBubble } from './Icons'
@@ -84,6 +84,7 @@ export function Chat() {
   const [busy, setBusy] = useState(false)
   const body = useRef<HTMLDivElement>(null)
   const input = useRef<HTMLInputElement>(null)
+  const fab = useRef<HTMLButtonElement>(null)
   const hint = useHint(open)
 
   useEffect(() => {
@@ -144,22 +145,11 @@ export function Chat() {
   return (
     <>
       {hint.phase !== 'off' && (
-        <div key={hint.round} className={`chat-hint is-${hint.phase}`} aria-hidden="true">
+        <div key={hint.round} className={`chat-hint is-${hint.phase}`} style={{ '--fab-w': `${fab.current?.offsetWidth ?? 260}px` } as CSSProperties} aria-hidden="true">
           <span className="chat-hint__text">{c.hint}</span>
-          <svg className="chat-hint__arrow" viewBox="0 0 80 64">
-            <defs>
-              <linearGradient id="chat-hint-iri" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stopColor="#7ef0ff" />
-                <stop offset="50%" stopColor="#c86cff" />
-                <stop offset="100%" stopColor="#ff7ac8" />
-              </linearGradient>
-            </defs>
-            <path className="chat-hint__line" pathLength={1} d="M3 9 C 30 -1, 62 12, 69 55" />
-            <path className="chat-hint__head" pathLength={1} d="M58 47 L69 57 L75 43" />
-          </svg>
         </div>
       )}
-      <button className={`chat-fab${open ? ' is-hidden' : ''}${hint.phase === 'on' ? ' is-hinting' : ''}`} onClick={() => setOpen(true)} aria-expanded={open} aria-controls="chat-panel" data-magnetic="0.3">
+      <button ref={fab} className={`chat-fab${open ? ' is-hidden' : ''}${hint.phase === 'on' ? ' is-hinting' : ''}`} onClick={() => setOpen(true)} aria-expanded={open} aria-controls="chat-panel" data-magnetic="0.3">
         <span className="chat-fab__dot" aria-hidden="true" />
         <ChatBubble className="chat-fab__icon" />
         <span className="chat-fab__label">{c.open}</span>

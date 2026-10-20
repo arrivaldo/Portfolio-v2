@@ -567,10 +567,25 @@ em {
   grid-template-columns: 180px 366px 1fr;
   align-items: center;
   min-height: 78px;
+  position: relative;
+  --draw: 1;
   padding: 0 var(--gutter);
-  border-top: 1px solid var(--line);
   cursor: default;
   transition: background 0.25s, padding 0.35s var(--ease-out);
+}
+/* The top rule is drawn rather than a border, so the reveal (rowsIn) can draw it in from the left. */
+.work__row::before,
+.archive__row::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--line);
+  transform: scaleX(var(--draw));
+  transform-origin: left;
+  pointer-events: none;
 }
 .work__row:last-child { border-bottom: 1px solid var(--line); }
 /* Same hover as the More projects rows: soft card fill and a small nudge right. */

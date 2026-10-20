@@ -33,6 +33,20 @@ export function blockIn(targets: gsap.TweenTarget, stagger = 0) {
   return tl
 }
 
+/**
+ * List-row entrance (Archive, Experience): each row's top rule draws itself left to right, and the row's cells
+ * follow it in, one after another. Rows need `--draw: 1` and a ::before rule scaled by it (see the row CSS).
+ */
+export function rowsIn(rows: Element[]) {
+  const tl = gsap.timeline()
+  const gap = Math.min(0.09, 1.2 / Math.max(rows.length, 1)) // long lists still finish in about a second
+  rows.forEach((row, i) => {
+    tl.from(row, { '--draw': 0, duration: 0.9, ease: 'power3.inOut' }, i * gap)
+    tl.from(row.children, { opacity: 0, x: -28, duration: 0.8, stagger: 0.06, ease: 'power3.out' }, i * gap + 0.15)
+  })
+  return tl
+}
+
 /** Media (an image, or a card/box holding one) slides in whole from the nearer edge — no clip, blur or steps. */
 export function mediaIn(el: Element) {
   return gsap.timeline().from(el, { opacity: 0, x: side(el) * 90, duration: 1.3, ease: 'power3.out' })

@@ -987,12 +987,13 @@ section > .section-head + * { margin-top: 0; }
   grid-template-columns: 220px 1fr 220px 24px;
   align-items: center;
   gap: 24px;
+  position: relative;
+  --draw: 1;
   padding: 20px 12px;
-  border-top: 1px solid var(--line);
   border-radius: 12px;
   transition: background 0.25s, padding 0.35s var(--ease-out);
 }
-.archive__list li:first-child .archive__row { border-top: 0; }
+.archive__list li:first-child .archive__row::before { content: none; }
 .archive__row:hover { padding-left: 20px; padding-right: 20px; background: var(--card-side-bg); }
 .archive__name { font-family: var(--mono); font-size: 15px; font-weight: 600; }
 .archive__name small {
@@ -1288,31 +1289,43 @@ img.quote__avatar { object-fit: cover; }
    pulses. Desktop only; under reduced motion it just appears. */
 .chat-hint {
   position: fixed;
-  right: 150px;
-  bottom: 74px;
+  right: 24px;
+  bottom: 92px;
+  width: var(--fab-w, 260px);
   z-index: 79;
   display: flex;
-  align-items: flex-start;
-  gap: 4px;
+  flex-direction: column;
+  align-items: center;
   pointer-events: none;
 }
 .chat-hint__text {
-  margin-top: -6px;
-  font: italic 500 14px var(--sans);
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--frame);
+  font: italic 500 13px/1.35 var(--sans);
   color: var(--text);
-  white-space: nowrap;
+  text-align: center;
   opacity: 0;
-  transform: translateX(-10px);
+  transform: translateY(6px);
   animation: chat-hint-text 0.6s 0.75s var(--ease-out) forwards;
 }
-.chat-hint__arrow { width: 80px; height: 64px; overflow: visible; animation: chat-hint-nudge 1.6s 1.4s ease-in-out infinite; }
-.chat-hint__arrow path { fill: none; stroke: url(#chat-hint-iri); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
-.chat-hint__line { animation: chat-hint-draw 0.8s 0.15s cubic-bezier(0.65, 0, 0.35, 1) forwards; }
-.chat-hint__head { animation: chat-hint-draw 0.3s 0.9s ease-out forwards; }
+/* Speech-bubble tail pointing down at the button. */
+.chat-hint__text { position: relative; }
+.chat-hint__text::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -7px;
+  width: 12px;
+  height: 12px;
+  background: var(--frame);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  transform: translateX(-50%) rotate(45deg);
+}
 .chat-hint.is-leaving { opacity: 0; transform: translateY(6px); transition: opacity 0.5s, transform 0.5s var(--ease-out); }
-@keyframes chat-hint-draw { to { stroke-dashoffset: 0; } }
 @keyframes chat-hint-text { to { opacity: 1; transform: none; } }
-@keyframes chat-hint-nudge { 50% { transform: translate(3px, 4px); } }
 
 /* The button answers the hint with a soft iridescent pulse ring. */
 .chat-fab.is-hinting::after {
@@ -1330,9 +1343,8 @@ img.quote__avatar { object-fit: cover; }
   .chat-fab.is-hinting::after { content: none; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .chat-hint__text, .chat-hint__arrow, .chat-hint__arrow path, .chat-fab.is-hinting::after { animation: none; }
+  .chat-hint__text, .chat-fab.is-hinting::after { animation: none; }
   .chat-hint__text { opacity: 1; transform: none; }
-  .chat-hint__arrow path { stroke-dashoffset: 0; }
 }
 .chat {
   position: fixed;

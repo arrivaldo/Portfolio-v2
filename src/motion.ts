@@ -2,7 +2,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import { type RefObject, useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { blockIn, charsIn, mediaIn } from './anim'
+import { blockIn, charsIn, mediaIn, rowsIn } from './anim'
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -298,6 +298,7 @@ export function useParallax() {
  * - `[data-reveal]` enters as one block.
  * - `[data-reveal-stagger]` enters its children one after another (children with their own data-reveal-img skip it).
  * - `[data-reveal-img]` brings a media box in whole (images are never uncovered progressively).
+ * - `[data-reveal-rows="<row selector>"]` draws a list in row by row (rowsIn).
  */
 export function useReveal() {
   useEffect(() => {
@@ -306,6 +307,7 @@ export function useReveal() {
       gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => revealOnScroll(el, blockIn(el)))
       gsap.utils.toArray<HTMLElement>('[data-reveal-stagger]').forEach((el) => revealOnScroll(el, blockIn([...el.children].filter((c) => !c.matches('[data-reveal-img]')), 0.08), 'top 85%'))
       gsap.utils.toArray<HTMLElement>('[data-reveal-img]').forEach((el) => revealOnScroll(el, mediaIn(el), 'top 85%'))
+      gsap.utils.toArray<HTMLElement>('[data-reveal-rows]').forEach((el) => revealOnScroll(el, rowsIn([...el.querySelectorAll(el.dataset.revealRows!)]), 'top 85%'))
     })
     return () => ctx.revert()
   }, [])

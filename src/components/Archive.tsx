@@ -46,7 +46,7 @@ export function Archive() {
         }
       />
       <div className="archive">
-        <ul className={`archive__list${expanded ? ' is-expanded' : ''}`} id="archive-list" data-reveal-stagger onPointerEnter={() => setHovering(true)} onPointerLeave={() => setHovering(false)}>
+        <ul className={`archive__list${expanded ? ' is-expanded' : ''}`} id="archive-list" data-reveal-rows=".archive__row" onPointerEnter={() => setHovering(true)} onPointerLeave={() => setHovering(false)}>
           {t.archive.map((p, i) => (
             <li key={p.name} className={i >= MOBILE_LIMIT ? 'archive__extra' : undefined} onPointerEnter={() => setActive(i)}>
               <button
