@@ -108,7 +108,8 @@
   .contact__email { justify-content: center; gap: 12px 10px; }
   .contact__email > a:first-child { flex-basis: 100%; text-align: center; border-bottom: 0; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 6px; }
   .contact__socials { justify-content: center; }
-  .footer { flex-direction: column; justify-content: center; text-align: center; gap: 10px; }
+  .footer { flex-direction: column; justify-content: center; text-align: center; gap: 18px; }
+  .footer__brand { flex-direction: column; gap: 10px; }
   .contact-form__send { width: 100%; }
   .contact-form__foot { justify-content: center; text-align: center; }
 }

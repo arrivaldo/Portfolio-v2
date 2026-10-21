@@ -75,10 +75,12 @@ function landDots(globe: ThreeGlobe, data: Int16Array, color: string, opacity: n
   return mesh
 }
 
-export default function LabGlobe({ active = true }: { active?: boolean }) {
+export default function LabGlobe({ active = true, onReady }: { active?: boolean; /** First frame with the land dots is drawn. */ onReady?: () => void }) {
   const host = useRef<HTMLDivElement>(null)
   const loop = useRef<{ start: () => void; stop: () => void } | null>(null)
   const theme = useDocTheme()
+  const readyRef = useRef(onReady)
+  readyRef.current = onReady
 
   useEffect(() => {
     const el = host.current!
@@ -143,6 +145,7 @@ export default function LabGlobe({ active = true }: { active?: boolean }) {
       if (!alive) return
       globe.add(landDots(globe, data, dark ? '#ffffff' : '#1f7aff', dark ? 0.7 : 0.55))
       renderer.render(scene, camera)
+      readyRef.current?.()
     })
     // Every 2 s a random ~80% of the arc ends pulse, like v1.
     // Home always pulses; the rest as in v1.

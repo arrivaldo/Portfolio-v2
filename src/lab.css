@@ -48,14 +48,19 @@
 .lab-bento__scene canvas:active { cursor: grabbing; }
 /* Spin button on the cube tile: sits over the scene's top-right corner (the scene's children are absolutely placed). */
 .lab-bento__scene > .lab-bento__spin {
-  inset: 16px 16px auto auto !important;
+  /* Centred along the top of the scene. */
+  inset: 16px 0 auto 0 !important;
+  margin: 0 auto;
   z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
   height: 40px;
+  padding: 0 16px 0 13px;
   border: 1px solid color-mix(in srgb, #1f7aff 45%, var(--line));
-  border-radius: 50%;
+  border-radius: 999px;
+  font: 13px var(--mono);
   background: color-mix(in srgb, var(--frame) 70%, transparent);
   color: var(--text);
   cursor: pointer;
@@ -63,9 +68,32 @@
   transition: border-color 0.25s, transform 0.5s var(--ease-out);
 }
 .lab-bento__spin:hover { border-color: #5ce1ff; }
-.lab-bento__spin:active { transform: rotate(-90deg) scale(0.94); }
-.lab-bento__spin svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.lab-bento__spin:active { transform: scale(0.96); }
+.lab-bento__spin:active svg { transform: rotate(-90deg); }
+.lab-bento__spin svg { width: 16px; height: 16px; transition: transform 0.5s var(--ease-out); fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .lab-globe { width: 100%; height: 100%; }
+
+/* Loader over a 3D scene until it draws its first frame (LabBento SceneLoader). */
+.lab-loader {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 14px;
+  pointer-events: none;
+  transition: opacity 0.6s var(--ease-out), visibility 0.6s;
+}
+.lab-loader.is-done { opacity: 0; visibility: hidden; }
+.lab-loader__ring {
+  width: 38px;
+  height: 38px;
+  border: 2px solid color-mix(in srgb, #1f7aff 20%, transparent);
+  border-top-color: #5ce1ff;
+  border-radius: 50%;
+  animation: lab-loader-spin 0.9s linear infinite;
+}
+.lab-loader__label { font: 11px var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+@keyframes lab-loader-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .lab-loader__ring { animation-duration: 2.4s; } }
 .lab-bento__cap { padding: 0 24px 22px; }
 .lab-bento__cap h3 { margin-bottom: 6px; }
 .lab-bento__cap p { max-width: 36ch; font-size: 14px; line-height: 1.45; color: var(--text); }

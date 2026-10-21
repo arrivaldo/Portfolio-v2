@@ -260,6 +260,16 @@ function AskTile() {
   )
 }
 
+/** Placeholder over a 3D scene until its first frame is drawn, then it fades out. */
+function SceneLoader({ done, label }: { done: boolean; label: string }) {
+  return (
+    <div className={`lab-loader${done ? ' is-done' : ''}`} role="status" aria-hidden={done}>
+      <span className="lab-loader__ring" aria-hidden="true" />
+      <span className="lab-loader__label">{label}</span>
+    </div>
+  )
+}
+
 /**
  * The Lab bento: where I work from (v1 globe + my local time), what I am on right now, what I build with (stack
  * cube), my GitHub graph and a door into the AI assistant. Six tiles, no empty cells at any width.
@@ -273,6 +283,9 @@ export function LabBento() {
   const tools = useMemo(() => new Set(t.roles.flatMap((r) => r.stack)).size, [t.roles])
   // Each press bumps the trigger; the cube plays a two-turn spin whenever it changes.
   const [spin, setSpin] = useState(0)
+  // Each scene reports its first drawn frame; until then its tile shows a loader.
+  const [globeReady, setGlobeReady] = useState(false)
+  const [cubeReady, setCubeReady] = useState(false)
 
   return (
     <div className="lab-bento" ref={ref} data-reveal-stagger>
@@ -280,9 +293,10 @@ export function LabBento() {
         <div className="lab-bento__scene">
           {stage >= 1 && (
             <Suspense fallback={null}>
-              <LabGlobe active={visible} />
+              <LabGlobe active={visible} onReady={() => setGlobeReady(true)} />
             </Suspense>
           )}
+          <SceneLoader done={globeReady} label={b.loading} />
         </div>
         <div className="lab-bento__cap">
           <h3>{b.globeTitle}</h3>
@@ -297,14 +311,16 @@ export function LabBento() {
         <div className="lab-bento__scene">
           {stage >= 2 && (
             <Suspense fallback={null}>
-              <TechCubeScene revealed={seen} active={visible} spinTrigger={spin} />
+              <TechCubeScene revealed={seen} active={visible} spinTrigger={spin} onReady={() => setCubeReady(true)} />
             </Suspense>
           )}
-          {stage >= 2 && (
-            <button type="button" className="lab-bento__spin" onClick={() => setSpin((n) => n + 1)} aria-label={b.spin} title={b.spin}>
+          <SceneLoader done={cubeReady} label={b.loading} />
+          {cubeReady && (
+            <button type="button" className="lab-bento__spin" onClick={() => setSpin((n) => n + 1)} title={b.spin}>
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" />
               </svg>
+              {b.spinLabel}
             </button>
           )}
         </div>

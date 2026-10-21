@@ -115,7 +115,7 @@ export function Brands() {
   const track = useDragMarquee()
 
   return (
-    <section className="brands" aria-label={t.ui.brandsLabel} data-reveal-stagger>
+    <section className="brands" aria-label={t.ui.brandsLabel} data-reveal-stagger data-reveal-start="top bottom">
       <div className="brands__label">
         <span className="brands__count">{t.ui.brandsCount(brands.length)}</span>
         <p>{t.ui.brandsLabel}</p>

@@ -299,13 +299,14 @@ export function useParallax() {
  * - `[data-reveal-stagger]` enters its children one after another (children with their own data-reveal-img skip it).
  * - `[data-reveal-img]` brings a media box in whole (images are never uncovered progressively).
  * - `[data-reveal-rows="<row selector>"]` draws a list in row by row (rowsIn).
+ * - `data-reveal-start="<ScrollTrigger start>"` overrides when a stagger block fires (e.g. sections near the fold).
  */
 export function useReveal() {
   useEffect(() => {
     if (prefersReducedMotion()) return
     const ctx = gsap.context(() => {
       gsap.utils.toArray<HTMLElement>('[data-reveal]').forEach((el) => revealOnScroll(el, blockIn(el)))
-      gsap.utils.toArray<HTMLElement>('[data-reveal-stagger]').forEach((el) => revealOnScroll(el, blockIn([...el.children].filter((c) => !c.matches('[data-reveal-img]')), 0.08), 'top 85%'))
+      gsap.utils.toArray<HTMLElement>('[data-reveal-stagger]').forEach((el) => revealOnScroll(el, blockIn([...el.children].filter((c) => !c.matches('[data-reveal-img]')), 0.08), el.dataset.revealStart ?? 'top 85%'))
       gsap.utils.toArray<HTMLElement>('[data-reveal-img]').forEach((el) => revealOnScroll(el, mediaIn(el), 'top 85%'))
       gsap.utils.toArray<HTMLElement>('[data-reveal-rows]').forEach((el) => revealOnScroll(el, rowsIn([...el.querySelectorAll(el.dataset.revealRows!)]), 'top 85%'))
     })

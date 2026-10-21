@@ -32,7 +32,7 @@ export type Role = { slug: string; title: string; description: string; stack: st
 export type NowItem = { label: string; text: string }
 
 export type LabCopy = {
-  bento: { title: string; lead: string; globeTitle: string; globeText: string; cubeTitle: string; cubeText: string; spin: string; timeTitle: string; day: string; night: string; ahead: string; behind: string; same: string; nowTitle: string; ghTitle: string; ghText: string; ghNote: string; ghError: string; askTitle: string; askText: string; askOpen: string }
+  bento: { title: string; lead: string; globeTitle: string; globeText: string; cubeTitle: string; cubeText: string; spin: string; spinLabel: string; loading: string; timeTitle: string; day: string; night: string; ahead: string; behind: string; same: string; nowTitle: string; ghTitle: string; ghText: string; ghNote: string; ghError: string; askTitle: string; askText: string; askOpen: string }
 }
 
 export type Content = {
@@ -99,7 +99,6 @@ export type Content = {
     contactCta: string
     copy: string
     copied: string
-    localTime: string
     backToTop: string
     rights: string
     switchTo: (mode: string) => string
@@ -318,6 +317,8 @@ const en: Content = {
         cubeTitle: 'Tech stack',
         cubeText: 'tools across six roles',
         spin: 'Spin the cube',
+        spinLabel: 'Spin',
+        loading: 'Loading 3D',
         timeTitle: 'Local time',
         day: 'daytime',
         night: 'night time',
@@ -340,7 +341,6 @@ const en: Content = {
     contactCta: 'Get in touch',
     copy: 'Copy email',
     copied: 'Copied!',
-    localTime: 'Local time',
     backToTop: 'Back to top',
     rights: 'All rights reserved',
     switchTo: (mode) => `Switch to ${mode} mode`,
@@ -573,6 +573,8 @@ const es: Content = {
         cubeTitle: 'Stack técnico',
         cubeText: 'herramientas en seis roles',
         spin: 'Girar el cubo',
+        spinLabel: 'Rotar',
+        loading: 'Cargando 3D',
         timeTitle: 'Hora local',
         day: 'de día',
         night: 'de noche',
@@ -595,7 +597,6 @@ const es: Content = {
     contactCta: 'Escríbeme',
     copy: 'Copiar email',
     copied: '¡Copiado!',
-    localTime: 'Hora local',
     backToTop: 'Volver arriba',
     rights: 'Todos los derechos reservados',
     switchTo: (mode) => `Cambiar a modo ${mode}`,

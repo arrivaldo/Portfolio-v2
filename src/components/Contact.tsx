@@ -1,30 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { socials } from '../data'
 import { Rich, useLang } from '../i18n'
 import { Circle } from './Circle'
 import { ContactForm } from './ContactForm'
 import { ArrowUpRight, Download, SocialIcon } from './Icons'
+import { Logo } from './Logo'
 import { SectionHead } from './SectionHead'
 
-function LocalTime({ timeZone, lang }: { timeZone: string; lang: string }) {
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(id)
-  }, [])
-  const time = new Intl.DateTimeFormat(lang === 'es' ? 'es-MX' : 'en-US', {
-    timeZone,
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-    timeZoneName: 'short',
-  }).format(now)
-  return <time dateTime={now.toISOString()}>{time}</time>
-}
-
 export function Contact() {
-  const { lang, t } = useLang()
+  const { t } = useLang()
   const { profile } = t
   const [copied, setCopied] = useState(false)
 
@@ -84,15 +68,16 @@ export function Contact() {
         <ContactForm />
       </section>
 
-      <footer className="footer" data-reveal-stagger>
-        <span>
-          © {new Date().getFullYear()} {profile.fullName}. {t.ui.rights}.
-        </span>
-        <span className="footer__time">
-          {t.ui.localTime} · {profile.city} <LocalTime timeZone={profile.timeZone} lang={lang} />
-        </span>
-        <a href="#top" className="footer__top" data-magnetic="0.4">
-          {t.ui.backToTop} ↑
+      <footer className="footer">
+        <div className="footer__brand">
+          <Logo size={34} />
+          <span>
+            © {new Date().getFullYear()} {profile.fullName}. {t.ui.rights}.
+          </span>
+        </div>
+        <a href="#top" className="footer__top" data-magnetic="0.3">
+          {t.ui.backToTop}
+          <span className="footer__top-icon" aria-hidden="true">↑</span>
         </a>
       </footer>
     </>

@@ -352,10 +352,15 @@ function AssemblyRig({
  * The Lab mounts the cube offscreen ahead of time with its loop paused; render one frame anyway so every shader
  * (bloom included) compiles now rather than on the first visible frame.
  */
-function Prewarm() {
+function Prewarm({ onReady }: { onReady?: () => void }) {
   const advance = useThree((s) => s.advance)
+  const readyRef = useRef(onReady)
+  readyRef.current = onReady
   useEffect(() => {
-    const id = requestAnimationFrame(() => advance(performance.now()))
+    const id = requestAnimationFrame(() => {
+      advance(performance.now())
+      readyRef.current?.()
+    })
     return () => cancelAnimationFrame(id)
   }, [advance])
   return null
@@ -366,12 +371,15 @@ export default function TechCubeScene({
   active = true,
   activeFace = null,
   spinTrigger,
+  onReady,
 }: {
   revealed?: boolean
   /** Pauses rendering while the section is off screen. */
   active?: boolean
   activeFace?: CubeFacePosition | null
   spinTrigger?: number
+  /** First frame is drawn (shaders compiled). */
+  onReady?: () => void
 }) {
   const theme = useDocTheme()
   const p = PALETTE[theme]
@@ -416,7 +424,7 @@ export default function TechCubeScene({
         maxPolarAngle={Math.PI / 1.85}
       />
 
-      <Prewarm />
+      <Prewarm onReady={onReady} />
       {p.bloom && (
         <EffectComposer multisampling={0} enableNormalPass={false}>
           <Bloom intensity={0.25} luminanceThreshold={0.75} luminanceSmoothing={0.15} radius={0.15} resolutionScale={0.5} />
