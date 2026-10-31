@@ -16,10 +16,11 @@
 .proof--race.is-on .proof__delta { opacity: 1; }
 
 /* Count: one glyph per unit. */
-.proof--count { grid-template-columns: repeat(10, 14px); gap: 5px 6px; }
+/* Glyphs shrink as columns grow, so wide rows stay within the width of the 10-column grid. */
+.proof--count { --s: min(14px, calc((200px - (var(--cols) - 1) * 5px) / var(--cols))); grid-template-columns: repeat(var(--cols), var(--s)); gap: 5px; }
 .proof--count svg {
-  width: 14px;
-  height: 14px;
+  width: var(--s);
+  height: var(--s);
   fill: none;
   stroke: var(--line);
   stroke-width: 1.3;
@@ -159,3 +160,5 @@
 .bento--f .bento__tile { position: relative; }
 .bento--f .bento__tile::after,
 .lab-bento__tile::after { inset: 0; z-index: 3; }
+/* Cards clip their glare, so the ring sits on the inner edge too. */
+.svc-cube__card::after { inset: 0; z-index: 2; }

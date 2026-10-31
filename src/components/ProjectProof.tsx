@@ -53,8 +53,10 @@ const glyphs: Record<Extract<Proof, { kind: 'count' }>['unit'], string> = {
 function Count({ to, unit }: { to: number; unit: keyof typeof glyphs }) {
   const [ref, seen] = useSeen<HTMLDivElement>()
   const solid = unit === 'person'
+  // Past 20 the grid would need a third row and push the card's footer out, so it splits into two longer rows instead.
+  const cols = to > 20 ? Math.ceil(to / 2) : 10
   return (
-    <div ref={ref} className={`proof proof--count${seen ? ' is-on' : ''}`} aria-hidden="true">
+    <div ref={ref} className={`proof proof--count${seen ? ' is-on' : ''}`} style={{ '--cols': cols } as CSSProperties} aria-hidden="true">
       {Array.from({ length: to }, (_, i) => (
         <svg key={i} viewBox="0 0 16 16" style={{ '--i': i } as CSSProperties} className={solid ? 'is-solid' : undefined}>
           <path d={glyphs[unit]} />

@@ -78,7 +78,7 @@
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: 56px 56px;
   background-position: center;
-  opacity: 0.45;
+  opacity: 0.25;
   mask-image: radial-gradient(ellipse 55% 50% at 50% 50%, #000, transparent 75%);
 }
 .bp__guide {

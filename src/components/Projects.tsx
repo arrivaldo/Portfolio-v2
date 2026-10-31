@@ -40,7 +40,7 @@ export function Projects() {
 
       <div className="projects__list" ref={list}>
         {t.projects.map((p, i) => (
-          <article key={p.id} className="project" style={{ '--i': i, '--glow': p.glow } as CSSProperties}>
+          <article key={p.id} id={`project-${p.id}`} className="project" style={{ '--i': i, '--glow': p.glow } as CSSProperties}>
             <div className="project__art project__art--poster" data-reveal-img>
               <img src={p.image} alt={p.title} loading="lazy" decoding="async" />
               <span className="project__index">{String(i + 1).padStart(2, '0')}</span>
