@@ -1,5 +1,5 @@
 /* =========================================================
-   Preloader (Preloader.tsx): "Engineer" drawn as a blueprint (grid, guides, dimension lines, crop marks) with the
+   Preloader (Preloader.tsx): "Engineer" drawn as a blueprint (grid, dimension lines, crop marks) with the
    full name beneath it and "(Loading) 0%" in the corners; then the drawing fades and the word flies onto the hero's
    "Engineer" while the panel fades away.
    ========================================================= */
@@ -68,7 +68,7 @@
 .mono__corner--left { left: clamp(16px, 2vw, 28px); }
 .mono__corner--right { right: clamp(16px, 2vw, 28px); }
 
-/* Blueprint: guides, dimension lines and crop marks driven by --p (0–1 progress). */
+/* Blueprint: dimension lines and crop marks driven by --p (0–1 progress). */
 .mono { --p: 0; }
 .bp__grid {
   position: absolute;
@@ -78,21 +78,9 @@
     linear-gradient(90deg, var(--line) 1px, transparent 1px);
   background-size: 56px 56px;
   background-position: center;
-  opacity: 0.25;
+  opacity: 0.15;
   mask-image: radial-gradient(ellipse 55% 50% at 50% 50%, #000, transparent 75%);
 }
-.bp__guide {
-  position: absolute;
-  left: 50%;
-  width: 200vw;
-  height: 1px;
-  margin-left: -100vw;
-  background: repeating-linear-gradient(90deg, var(--muted) 0 6px, transparent 6px 12px);
-  opacity: 0.55;
-  transform: scaleX(var(--p));
-}
-.bp__guide--top { top: 0.12em; }
-.bp__guide--base { bottom: 0.12em; }
 .bp__dim { position: absolute; display: grid; place-items: center; }
 .bp__dim::before,
 .bp__dim::after { content: ''; position: absolute; }

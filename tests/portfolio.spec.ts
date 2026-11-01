@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test'
 
-/** Opens the site in a fixed language and waits for the intro to unlock the page. */
+/** Opens the site (with a past language choice saved, which must not matter) and waits for the intro to unlock the page. */
 async function open(page: Page, lang: 'en' | 'es' = 'en', path = '/') {
   await page.addInitScript((l) => localStorage.setItem('lang', l), lang)
   await page.goto(path)
@@ -37,10 +37,10 @@ test.describe('portfolio', () => {
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/es$/)
   })
 
-  test('a saved Spanish choice moves "/" to /es', async ({ page }) => {
+  test('"/" always opens in English, even after choosing Spanish before', async ({ page }) => {
     await open(page, 'es')
-    await expect(page).toHaveURL(/\/es$/)
-    await expect(page.locator('html')).toHaveAttribute('lang', 'es')
+    await expect(page).not.toHaveURL(/\/es$/)
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   })
 
   test('toggles the theme', async ({ page }) => {

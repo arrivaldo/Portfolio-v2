@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import { content, type Content, type Lang } from './data'
 
-const STORAGE_KEY = 'lang'
-
 type LangState = { lang: Lang; setLang: (l: Lang) => void; t: Content }
 
 const LangContext = createContext<LangState | null>(null)
@@ -11,17 +9,8 @@ const LangContext = createContext<LangState | null>(null)
 const isSpanishPath = () => /^\/es\/?$/.test(location.pathname)
 const pathFor = (lang: Lang) => (lang === 'es' ? '/es' : '/')
 
-function getInitialLang(): Lang {
-  // index.html already moved a Spanish visitor from "/" to "/es", so the URL is the answer; the rest is a fallback.
-  if (isSpanishPath()) return 'es'
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved === 'en' || saved === 'es') return saved
-  } catch {
-    // storage unavailable — fall back to browser language
-  }
-  return navigator.language.toLowerCase().startsWith('es') ? 'es' : 'en'
-}
+/** English by default, whatever the browser language or a past visit chose; only the /es URL opens in Spanish. */
+const getInitialLang = (): Lang => (isSpanishPath() ? 'es' : 'en')
 
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>(getInitialLang)
@@ -36,11 +25,6 @@ export function LangProvider({ children }: { children: ReactNode }) {
     if ((location.pathname.replace(/\/+$/, '') || '/') !== path) history.replaceState(null, '', path + location.search + location.hash)
     const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
     if (canonical) canonical.href = new URL(path, canonical.href).href
-    try {
-      localStorage.setItem(STORAGE_KEY, lang)
-    } catch {
-      // ignore
-    }
   }, [lang, t])
 
   return <LangContext.Provider value={{ lang, setLang, t }}>{children}</LangContext.Provider>

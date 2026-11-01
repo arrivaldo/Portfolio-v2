@@ -15,7 +15,7 @@ const MAX_MS = 6000 // never hold the page hostage on a slow image
 /**
  * Intro (blueprint, chosen 2026-10-17 over caret / slice / spotlight / assemble / orbit / roles / echo / magnet /
  * sundial / tag; before that also split / fill / slot / cards / blur / stack / iris / wave): "Engineer" drawn like a
- * technical drawing — faint grid, guides, dimension lines around the word and crop marks — with the full name
+ * technical drawing — faint grid, dimension lines around the word and crop marks — with the full name
  * beneath it and "(Loading) 0%" in the corners. The drawing fills with real progress; when ready it fades, the name
  * drops away and the word flies onto the hero's "Engineer" while the panel fades around it.
  */
@@ -144,8 +144,6 @@ export function Preloader({ onDone }: { onDone: () => void }) {
       <div className="mono__stage">
         <div className="mono__box" aria-hidden="true">
           <div className="mono__word">{word}</div>
-          <span className="bp bp__guide bp__guide--top" />
-          <span className="bp bp__guide bp__guide--base" />
           <span className="bp bp__dim bp__dim--w" />
           <span className="bp bp__dim bp__dim--h" />
           {['tl', 'tr', 'bl', 'br'].map((c) => (

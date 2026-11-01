@@ -7,18 +7,8 @@
         if (t !== "dark" && t !== "light") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
         document.documentElement.dataset.theme = t;
         document.documentElement.classList.add("is-loading");
-        // Same rule as i18n.tsx, applied before React loads: the URL decides (/es is Spanish); on "/" a saved choice or a
-        // Spanish browser moves the visitor to /es without a reload, so every language keeps one shareable URL.
-        var l = "en";
-        if (/^\/es\/?$/.test(location.pathname)) l = "es";
-        else {
-          var saved = localStorage.getItem("lang");
-          if (saved === "es" || (saved !== "en" && navigator.language.toLowerCase().indexOf("es") === 0)) {
-            l = "es";
-            history.replaceState(null, "", "/es" + location.search + location.hash);
-          }
-        }
-        document.documentElement.lang = l;
+        // Same rule as i18n.tsx, applied before React loads: English by default; only the /es URL opens in Spanish.
+        document.documentElement.lang = /^\/es\/?$/.test(location.pathname) ? "es" : "en";
       } catch (e) {}
     </script>
     <meta charset="UTF-8" />
