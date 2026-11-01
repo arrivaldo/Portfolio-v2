@@ -24,6 +24,9 @@ function profile(): string {
   return [
     `NAME: ${t.profile.fullName}. Based in ${t.profile.city}. ${t.profile.status}.`,
     `SUMMARY: ${strip(t.profile.intro)} ${strip(t.profile.goal)}`,
+    // The "What I do" section, so questions about services get the same answer the page gives.
+    `WHAT I DO (services): ${strip(t.ui.processIntro)}\n${t.process.map((p) => `- ${p.title}: ${p.text}`).join('\n')}`,
+    `WHAT DRIVES ME: ${strip(t.ui.lab.bento.cubeText)}`,
     `ROLES:\n${t.roles.map((r) => `- ${r.title}: ${r.description} Stack: ${r.stack.join(', ')}.`).join('\n')}`,
     `EXPERIENCE:\n${t.jobs.map((j) => `- ${j.period} · ${j.company} · ${j.role}${j.highlights.length ? `: ${j.highlights.join(' ')}` : ''}`).join('\n')}`,
     `FEATURED PROJECTS:\n${t.projects
