@@ -35,9 +35,10 @@ export function revealOnScroll(trigger: Element, tl: gsap.core.Timeline | gsap.c
   return ScrollTrigger.create({ trigger, start, once: true, onEnter: () => onIntro(() => tl.play()) })
 }
 
-export function scrollToTarget(target: string | number) {
+/** `offset` (px) shifts where the target lands, e.g. negative to leave room above it. */
+export function scrollToTarget(target: string | number, offset = 0) {
   if (lenis) {
-    lenis.scrollTo(target, { duration: 1.4 })
+    lenis.scrollTo(target, { duration: 1.4, offset })
     return
   }
   if (typeof target === 'number') window.scrollTo({ top: target })
@@ -197,12 +198,23 @@ export function useSpotlight<T extends HTMLElement>(cards: string, target?: RefO
   useEffect(() => {
     const box = ref.current
     if (!box || !hasFinePointer() || prefersReducedMotion()) return
-    const onMove = (e: PointerEvent) => {
-      box.querySelectorAll<HTMLElement>(cards).forEach((card) => {
-        const r = card.getBoundingClientRect()
-        card.style.setProperty('--mx', `${e.clientX - r.left}px`)
-        card.style.setProperty('--my', `${e.clientY - r.top}px`)
+    // One update per frame, all rects read before any style is written, so the cards don't force a layout each.
+    let raf = 0
+    let px = 0
+    let py = 0
+    const update = () => {
+      raf = 0
+      const els = [...box.querySelectorAll<HTMLElement>(cards)]
+      const rects = els.map((card) => card.getBoundingClientRect())
+      els.forEach((card, i) => {
+        card.style.setProperty('--mx', `${px - rects[i].left}px`)
+        card.style.setProperty('--my', `${py - rects[i].top}px`)
       })
+    }
+    const onMove = (e: PointerEvent) => {
+      px = e.clientX
+      py = e.clientY
+      if (!raf) raf = requestAnimationFrame(update)
     }
     const on = () => box.classList.add('is-lit')
     const off = () => box.classList.remove('is-lit')
@@ -210,6 +222,7 @@ export function useSpotlight<T extends HTMLElement>(cards: string, target?: RefO
     box.addEventListener('pointerenter', on)
     box.addEventListener('pointerleave', off)
     return () => {
+      cancelAnimationFrame(raf)
       box.removeEventListener('pointermove', onMove)
       box.removeEventListener('pointerenter', on)
       box.removeEventListener('pointerleave', off)

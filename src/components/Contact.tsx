@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { socials } from '../data'
+import { gmailCompose, socials } from '../data'
 import { Rich, useLang } from '../i18n'
 import { Circle } from './Circle'
 import { ContactForm } from './ContactForm'
@@ -29,7 +29,7 @@ export function Contact() {
         <SectionHead label={t.ui.contactLabel} title={t.ui.contactTitle.join(' ')} lead={<Rich text={t.ui.contactIntro} />} />
 
         <div className="contact__row">
-          <a href={`mailto:${profile.email}`} className="contact__cta" data-reveal data-magnetic="0.3" data-cursor="Hi!">
+          <a href={gmailCompose(profile.email)} target="_blank" rel="noreferrer" className="contact__cta" data-reveal data-magnetic="0.3" data-cursor="Hi!">
             <span>{t.ui.contactCta}</span>
             <ArrowUpRight size={28} />
           </a>
@@ -41,7 +41,7 @@ export function Contact() {
               {profile.status}
             </p>
             <div className="contact__email">
-              <a href={`mailto:${profile.email}`}>{profile.email}</a>
+              <a href={gmailCompose(profile.email)} target="_blank" rel="noreferrer">{profile.email}</a>
               <button className="contact__copy" onClick={copy} data-magnetic="0.3">
                 {copied ? t.ui.copied : t.ui.copy}
               </button>
@@ -55,7 +55,7 @@ export function Contact() {
             <ul className="contact__socials">
               {socials.filter((s) => s.id !== 'email').map((s) => (
                 <li key={s.id}>
-                  <a className="social" href={s.href} target={s.id === 'email' ? undefined : '_blank'} rel="noreferrer" data-magnetic="0.25">
+                  <a className="social" href={s.href} target="_blank" rel="noreferrer" data-magnetic="0.25">
                     <SocialIcon id={s.id} />
                     {s.label}
                   </a>

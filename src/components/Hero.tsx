@@ -41,7 +41,7 @@ export function Hero() {
       <ul className="socials">
         {socials.map((s) => (
           <li key={s.id}>
-            <a className="social" href={s.href} target={s.id === 'email' ? undefined : '_blank'} rel="noreferrer">
+            <a className="social" href={s.href} target="_blank" rel="noreferrer">
               <SocialIcon id={s.id} />
               {s.label}
             </a>

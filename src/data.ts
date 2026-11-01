@@ -26,7 +26,7 @@ export type Project = {
 /** Smaller projects. `story` feeds the same case-study modal as the featured projects (drafted by Claude from the v1 descriptions — user to review). */
 export type ArchiveProject = { name: string; tagline: string; description: string; stack: string[]; href: string; image: string; glow: string; story: { problem: string; solution: string; result: string } }
 export type Stat = { value: number; prefix?: string; suffix?: string; decimals?: number; label: string }
-export type Step = { title: string; text: string; tags: string[] }
+export type Step = { title: string; text: string }
 export type Testimonial = { quote: string; name: string; role: string; photo?: string }
 export type Role = { slug: string; title: string; description: string; stack: string[]; signal: string }
 export type NowItem = { label: string; text: string }
@@ -129,11 +129,14 @@ export type Content = {
   now: NowItem[]
 }
 
+/** Gmail's web compose window with the address already in To: — mailto opened the visitor's desktop client (Outlook). */
+export const gmailCompose = (email: string) => `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(email)}`
+
 export const socials: Social[] = [
   { id: 'github', label: 'GitHub', href: 'https://github.com/arrivaldo' },
   { id: 'linkedin', label: 'LinkedIn', href: 'https://www.linkedin.com/in/erickbarcena7/' },
   { id: 'whatsapp', label: 'WhatsApp', href: 'https://api.whatsapp.com/send?phone=525540779049' },
-  { id: 'email', label: 'Email', href: 'mailto:erickbarcena00@gmail.com' },
+  { id: 'email', label: 'Email', href: gmailCompose('erickbarcena00@gmail.com') },
 ]
 
 /**
@@ -203,13 +206,17 @@ const archiveBase = [
   { name: 'Popular en Línea', stack: ['React', 'C#', '.NET', 'SQL Server', 'SharePoint'], href: 'https://popularenlinea.com/personas/Paginas/Home.aspx', image: '/projects/archive-popular.webp', glow: '#4d7cff' },
 ]
 
+/** DOM id of a company's row in Experience, so other sections can link to it. */
+export const jobAnchor = (company: string) =>
+  `job-${company.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+
 const jobsBase = [
   { company: 'Casa Médica', logo: '/companies/casa-medica.webp' },
   { company: 'Yalo.ai', logo: '/companies/yalo.webp' },
-  { company: 'Apesa Software', logo: '/companies/apesa.webp' },
+  { company: 'APESA Software', logo: '/companies/apesa.webp' },
   { company: 'Rules Cube', logo: '/companies/rules-cube.webp' },
   { company: 'Global Human Capital', logo: '/companies/global-hc.webp' },
-  { company: 'Neoris', logo: '/companies/neoris.webp' },
+  { company: 'NEORIS', logo: '/companies/neoris.webp' },
   { company: 'HSBC', logo: '/companies/hsbc.webp' },
 ]
 
@@ -294,9 +301,9 @@ const en: Content = {
     projectsTitle: 'Recent projects',
     projectsIntro: 'Products I *designed and built*, plus client work I *contributed to*.',
     aboutIntro: 'Driven by innovation. Based in *Mexico*, working with teams abroad.',
-    processIntro: 'From *architecture* to *tested, automated* software running in production.',
-    workIntro: '*9+ years* across product, QA and automation, from banking apps to *AI agents*.',
-    testimonialsIntro: "Words from people I've *built, tested and shipped* with.",
+    processIntro: 'From software development to automation and production *solutions*.',
+    workIntro: '*9+ years* building, automating and scaling solutions across diverse industries.',
+    testimonialsIntro: "Words from people I've *collaborated* with along the way.",
     contactIntro: 'Have a project, a role or a question? *Write me* and I will get back to you.',
     archiveLabel: '... /Archive ...',
     archiveTitle: 'More projects',
@@ -314,11 +321,11 @@ const en: Content = {
     lab: {
       bento: {
         title: 'Beyond the code',
-        lead: 'Where I work from, what I am on right now and what I build with. *Drag the globe and the cube.*',
+        lead: 'Where I work from, what I am on right now and what drives me. *Drag the globe and the cube.*',
         globeTitle: 'México → the world',
         globeText: 'Remote-first, working with teams across time zones.',
-        cubeTitle: 'Tech stack',
-        cubeText: 'tools across six roles',
+        cubeTitle: 'What drives me',
+        cubeText: 'Transforming ideas into *real-world*, impactful technology solutions.',
         spin: 'Spin the cube',
         spinLabel: 'Spin',
         loading: 'Loading 3D',
@@ -359,7 +366,7 @@ const en: Content = {
       send: 'Send',
       close: 'Close chat',
       thinking: 'Thinking…',
-      suggestions: ['What kind of automation do you build?', 'Which QA tools do you use?', 'Tell me about your AI projects'],
+      suggestions: ['What kind of automation do you build?', "What's your tech stack?", 'What industries have you worked in?'],
       errors: {
         busy: 'Lots of traffic right now, please try again in a moment.',
         offline: "The assistant isn't available right now. You can reach me through the contact form below.",
@@ -464,13 +471,13 @@ const en: Content = {
   ],
   skillGroups,
   jobs: [
-    { ...jobsBase[0], period: '2026 — Present', role: 'Automation Engineer', highlights: ['Automation of internal processes and workflows.', 'Conversational AI agents for customer channels.', 'WhatsApp integrations on the Meta Business API.'] },
-    { ...jobsBase[1], period: 'Jun 2025 — 2026', role: 'Senior Product Engineer', highlights: ['AI agents for 20+ international clients.', 'AI automation tools that cut manual work by 60%.', 'L2/L3 fixes in Lua, TypeScript, Python and Go.'] },
-    { ...jobsBase[2], period: 'Feb — May 2025', role: 'QA Lead Engineer', highlights: ['SPEI and CETES automated in one quarter.', 'Playwright framework in GitLab CI/CD.', 'Trained and mentored 12 engineers.'] },
-    { ...jobsBase[3], period: 'Jan 2021 — Feb 2025', role: 'QA / Pega System Architect', highlights: ['Pega apps processing 1000+ daily cases.', 'Led QA teams across 5 client projects.', 'Certified Pega System & Business Architect.'] },
-    { ...jobsBase[4], period: '2020 — 2021', role: 'Front-End Developer', highlights: ['25 responsive landing pages.', 'Lazy loading and code splitting for speed.', 'Fewer UI tickets by fixing defects early.'] },
-    { ...jobsBase[5], period: '2019 — 2020', role: 'Full-Stack Engineer', highlights: ['Banking web app with React and TypeScript.', 'Server-side fixes in C# and SQL Server.', 'Azure, SharePoint and Hyper-V environments.'] },
-    { ...jobsBase[6], period: '2018 — 2019', role: 'MIS Engineer', highlights: ['MIS solutions for data processing.', 'Reporting automation with VBA and Power BI.', 'Tech support for premier banking clients.'] },
+    { ...jobsBase[0], period: '2026 — Present', role: 'Automation Engineer', highlights: ['Built AI-powered agents for customer engagement and automation.', 'Automated business workflows using APIs, webhooks and system integrations.', 'Developed WhatsApp solutions using Meta Business API and e-commerce integrations.'] },
+    { ...jobsBase[1], period: 'Jun 2025 — 2026', role: 'Senior Product Support Engineer', highlights: ['Supported AI-powered solutions for 20+ international clients.', 'Built automation tools to streamline support operations.', 'Resolved L2/L3 production issues across APIs, cloud services and code.'] },
+    { ...jobsBase[2], period: 'Feb — May 2025', role: 'QA Automation Lead', highlights: ['Led a team of 12 QA engineers across financial applications.', 'Built Playwright frameworks integrated with GitLab CI/CD.', 'Automated critical testing for SPEI, CETES and IAM systems.'] },
+    { ...jobsBase[3], period: 'Jan 2021 — Feb 2025', role: 'QA Lead / Pega System Architect', highlights: ['Delivered enterprise solutions across five Pega projects.', 'Worked on applications processing 1,000+ cases daily.', 'Led QA initiatives across banking, insurance and supply chain.'] },
+    { ...jobsBase[4], period: '2020 — 2021', role: 'Front-End Developer', highlights: ['Developed 20+ responsive landing pages.', 'Built reusable frontend components and integrations.', 'Improved usability, performance and cross-browser compatibility.'] },
+    { ...jobsBase[5], period: '2019 — 2020', role: 'Full-Stack Engineer', highlights: ['Built enterprise applications with React and TypeScript.', 'Developed backend functionality using C# and SQL Server.', 'Worked with Azure and SharePoint environments.'] },
+    { ...jobsBase[6], period: '2018 — 2019', role: 'MIS Solutions Engineer', highlights: ['Developed solutions for financial data processing.', 'Automated reporting workflows using VBA, SQL and Power BI.', 'Supported internal systems and banking operations.'] },
   ],
   education: [
     "Master's in Business Management & Quality Engineering (in progress)",
@@ -479,10 +486,12 @@ const en: Content = {
   ],
   certifications: ['ISTQB Foundation', 'Pega System Architect', 'Pega Business Architect', 'Harvard CS50 (ongoing)', 'Certified JavaScript Developer', 'Certified React Developer'],
   process: [
-    { title: 'Software Engineering', text: 'Building modern software products across frontend, backend services, APIs and cloud environments.', tags: ['TypeScript', 'React', 'Node.js', '.NET', 'AWS'] },
-    { title: 'AI & Automation', text: 'Creating AI agents, intelligent workflows and integrations that connect tools, data and processes.', tags: ['LLMs', 'MCP', 'RAG', 'n8n'] },
-    { title: 'Solutions Engineering', text: 'Designing scalable solutions that connect clients, business architecture, integrations and code.', tags: ['Pega', 'Salesforce', 'SAP', 'Power BI'] },
-    { title: 'Quality Assurance', text: 'Designing strategies and automation frameworks across UI, APIs and end-to-end workflows.', tags: ['Playwright', 'Cypress', 'JMeter', 'CI/CD'] },
+    { title: 'Software Engineering', text: 'Building scalable applications, APIs and cloud-based solutions, from frontend experiences to backend systems.' },
+    { title: 'AI & Automation', text: 'Developing AI agents, intelligent workflows and integrations that automate processes and connect systems.' },
+    { title: 'Solutions Engineering', text: 'Bridging business needs and technical execution through solution design, integrations and architecture.' },
+    { title: 'Quality Engineering', text: 'Building automated testing frameworks and strategies to improve software quality, reliability and delivery.' },
+    { title: 'Product Engineering', text: 'Diagnosing complex production issues, tracing root causes and delivering fixes across applications, APIs and cloud services.' },
+    { title: 'Business Architecture', text: 'Translating business requirements into technical solutions by defining processes, workflows and system capabilities.' },
   ],
   roles: [
     { slug: 'software-engineer', title: 'Software Engineer', stack: roleStacks.software, signal: '9 years building', description: 'I build and ship software across the full product lifecycle — from architecture and APIs to frontend, backend and production deployment.' },
@@ -505,8 +514,8 @@ const en: Content = {
   ],
   now: [
     { label: 'Building', text: 'Automation at Casa Médica.' },
-    { label: 'Studying', text: "Master's in Business Management & Quality Engineering." },
-    { label: 'Learning', text: 'Harvard CS50.' },
+    { label: 'Exploring', text: 'PhD opportunities in Engineering and Technology.' },
+    { label: 'Learning', text: 'AWS Certified Solutions Architect – Associate.' },
   ],
 }
 
@@ -551,9 +560,9 @@ const es: Content = {
     projectsTitle: 'Proyectos recientes',
     projectsIntro: 'Productos que *diseñé y construí*, y proyectos profesionales en los que *colaboré*.',
     aboutIntro: 'Impulsado por la innovación. Desde *México*, con equipos en el extranjero.',
-    processIntro: 'De la *arquitectura* al software *probado y automatizado* corriendo en producción.',
-    workIntro: '*Más de 9 años* entre producto, QA y automatización, de apps bancarias a *agentes de IA*.',
-    testimonialsIntro: 'Palabras de personas con las que he *construido, probado y lanzado*.',
+    processIntro: 'Del desarrollo de software a la automatización y *soluciones* en producción.',
+    workIntro: '*Más de 9 años* construyendo, automatizando y escalando soluciones en industrias diversas.',
+    testimonialsIntro: 'Palabras de personas con las que he *colaborado* en el camino.',
     contactIntro: '¿Un proyecto, un puesto o una duda? *Escríbeme* y te respondo.',
     archiveLabel: '... /Archivo ...',
     archiveTitle: 'Más proyectos',
@@ -571,11 +580,11 @@ const es: Content = {
     lab: {
       bento: {
         title: 'Más allá del código',
-        lead: 'Desde dónde trabajo, en qué estoy ahora y con qué construyo. *Arrastra el globo y el cubo.*',
+        lead: 'Desde dónde trabajo, en qué estoy ahora y qué me impulsa. *Arrastra el globo y el cubo.*',
         globeTitle: 'México → el mundo',
         globeText: 'Trabajo remoto, con equipos en distintas zonas horarias.',
-        cubeTitle: 'Stack técnico',
-        cubeText: 'herramientas en seis roles',
+        cubeTitle: 'Lo que me impulsa',
+        cubeText: 'Transformar ideas en soluciones tecnológicas de impacto en el *mundo real*.',
         spin: 'Girar el cubo',
         spinLabel: 'Rotar',
         loading: 'Cargando 3D',
@@ -616,7 +625,7 @@ const es: Content = {
       send: 'Enviar',
       close: 'Cerrar chat',
       thinking: 'Pensando…',
-      suggestions: ['¿Qué tipo de automatizaciones construyes?', '¿Qué herramientas de QA usas?', 'Cuéntame de tus proyectos con IA'],
+      suggestions: ['¿Qué tipo de automatizaciones construyes?', '¿Cuál es tu stack tecnológico?', '¿En qué industrias has trabajado?'],
       errors: {
         busy: 'Hay mucho tráfico en este momento, intenta de nuevo en un rato.',
         offline: 'El asistente no está disponible ahora. Puedes escribirme con el formulario de contacto.',
@@ -721,13 +730,13 @@ const es: Content = {
   ],
   skillGroups,
   jobs: [
-    { ...jobsBase[0], period: '2026 — Hoy', role: 'Automation Engineer', highlights: ['Automatización de procesos y flujos internos.', 'Agentes conversacionales de IA para clientes.', 'Integraciones de WhatsApp con Meta Business API.'] },
-    { ...jobsBase[1], period: 'Jun 2025 — 2026', role: 'Senior Product Engineer', highlights: ['Agentes de IA para más de 20 clientes.', 'Automatización con IA: 60% menos trabajo manual.', 'Soporte L2/L3 en Lua, TypeScript, Python y Go.'] },
-    { ...jobsBase[2], period: 'Feb — May 2025', role: 'QA Lead Engineer', highlights: ['SPEI y CETES automatizados en un trimestre.', 'Framework en Playwright con GitLab CI/CD.', 'Capacitación y mentoría a 12 ingenieros.'] },
-    { ...jobsBase[3], period: 'Ene 2021 — Feb 2025', role: 'QA / Pega System Architect', highlights: ['Apps Pega con más de 1000 casos diarios.', 'Liderazgo de QA en 5 proyectos de clientes.', 'Certificado Pega System y Business Architect.'] },
-    { ...jobsBase[4], period: '2020 — 2021', role: 'Front-End Developer', highlights: ['25 landing pages responsivas.', 'Lazy loading y code splitting para velocidad.', 'Menos tickets de UI corrigiendo defectos a tiempo.'] },
-    { ...jobsBase[5], period: '2019 — 2020', role: 'Full-Stack Engineer', highlights: ['App web bancaria con React y TypeScript.', 'Correcciones server-side en C# y SQL Server.', 'Entornos en Azure, SharePoint y Hyper-V.'] },
-    { ...jobsBase[6], period: '2018 — 2019', role: 'MIS Engineer', highlights: ['Soluciones MIS para procesar datos.', 'Automatización de reportes con VBA y Power BI.', 'Soporte técnico a clientes bancarios premier.'] },
+    { ...jobsBase[0], period: '2026 — Hoy', role: 'Automation Engineer', highlights: ['Construí agentes con IA para atención y automatización con clientes.', 'Automaticé flujos de negocio con APIs, webhooks e integraciones entre sistemas.', 'Desarrollé soluciones de WhatsApp con Meta Business API e integraciones de e-commerce.'] },
+    { ...jobsBase[1], period: 'Jun 2025 — 2026', role: 'Senior Product Support Engineer', highlights: ['Soporte a soluciones con IA para más de 20 clientes internacionales.', 'Construí herramientas de automatización para agilizar la operación de soporte.', 'Resolví incidencias L2/L3 en producción entre APIs, servicios cloud y código.'] },
+    { ...jobsBase[2], period: 'Feb — May 2025', role: 'QA Automation Lead', highlights: ['Lideré un equipo de 12 ingenieros de QA en aplicaciones financieras.', 'Construí frameworks en Playwright integrados con GitLab CI/CD.', 'Automaticé pruebas críticas para los sistemas SPEI, CETES e IAM.'] },
+    { ...jobsBase[3], period: 'Ene 2021 — Feb 2025', role: 'QA Lead / Pega System Architect', highlights: ['Entregué soluciones empresariales en cinco proyectos de Pega.', 'Trabajé en aplicaciones que procesan más de 1,000 casos diarios.', 'Lideré iniciativas de QA en banca, seguros y cadena de suministro.'] },
+    { ...jobsBase[4], period: '2020 — 2021', role: 'Front-End Developer', highlights: ['Desarrollé más de 20 landing pages responsivas.', 'Construí componentes frontend reutilizables e integraciones.', 'Mejoré usabilidad, rendimiento y compatibilidad entre navegadores.'] },
+    { ...jobsBase[5], period: '2019 — 2020', role: 'Full-Stack Engineer', highlights: ['Construí aplicaciones empresariales con React y TypeScript.', 'Desarrollé funcionalidad backend con C# y SQL Server.', 'Trabajé con entornos de Azure y SharePoint.'] },
+    { ...jobsBase[6], period: '2018 — 2019', role: 'MIS Solutions Engineer', highlights: ['Desarrollé soluciones para el procesamiento de datos financieros.', 'Automaticé flujos de reportes con VBA, SQL y Power BI.', 'Soporte a sistemas internos y operaciones bancarias.'] },
   ],
   education: [
     'Maestría en Administración de Negocios e Ingeniería de Calidad (en curso)',
@@ -736,10 +745,12 @@ const es: Content = {
   ],
   certifications: ['ISTQB Foundation', 'Pega System Architect', 'Pega Business Architect', 'Harvard CS50 (en curso)', 'Certified JavaScript Developer', 'Certified React Developer'],
   process: [
-    { title: 'Ingeniería de software', text: 'Construyo productos de software modernos: frontend, servicios backend, APIs y entornos cloud.', tags: ['TypeScript', 'React', 'Node.js', '.NET', 'AWS'] },
-    { title: 'IA y automatización', text: 'Creo agentes de IA, flujos inteligentes e integraciones que conectan herramientas, datos y procesos.', tags: ['LLMs', 'MCP', 'RAG', 'n8n'] },
-    { title: 'Ingeniería de soluciones', text: 'Diseño soluciones escalables que conectan arquitectura de negocio, integraciones y código.', tags: ['Pega', 'Salesforce', 'SAP', 'Power BI'] },
-    { title: 'Aseguramiento de calidad', text: 'Diseño estrategias y frameworks de automatización para UI, APIs y flujos end-to-end.', tags: ['Playwright', 'Cypress', 'JMeter', 'CI/CD'] },
+    { title: 'Ingeniería de software', text: 'Construyo aplicaciones escalables, APIs y soluciones en la nube, desde la experiencia frontend hasta los sistemas backend.' },
+    { title: 'IA y automatización', text: 'Desarrollo agentes de IA, flujos inteligentes e integraciones que automatizan procesos y conectan sistemas.' },
+    { title: 'Ingeniería de soluciones', text: 'Conecto las necesidades del negocio con la ejecución técnica mediante diseño de soluciones, integraciones y arquitectura.' },
+    { title: 'Ingeniería de calidad', text: 'Construyo frameworks y estrategias de pruebas automatizadas que mejoran la calidad, confiabilidad y entrega del software.' },
+    { title: 'Ingeniería de producto', text: 'Diagnostico problemas complejos en producción, rastreo la causa raíz y entrego correcciones en aplicaciones, APIs y servicios cloud.' },
+    { title: 'Arquitectura de negocio', text: 'Traduzco requerimientos de negocio en soluciones técnicas definiendo procesos, flujos y capacidades del sistema.' },
   ],
   roles: [
     { slug: 'software-engineer', title: 'Software Engineer', stack: roleStacks.software, signal: '9 años construyendo', description: 'Construyo y llevo a producción software en todo el ciclo de vida: arquitectura, APIs, frontend, backend y despliegue.' },
@@ -762,8 +773,8 @@ const es: Content = {
   ],
   now: [
     { label: 'Construyendo', text: 'Automatización en Casa Médica.' },
-    { label: 'Estudiando', text: 'Maestría en Administración de Negocios e Ingeniería de Calidad.' },
-    { label: 'Aprendiendo', text: 'Harvard CS50.' },
+    { label: 'Explorando', text: 'Oportunidades de doctorado en Ingeniería y Tecnología.' },
+    { label: 'Aprendiendo', text: 'AWS Certified Solutions Architect – Associate.' },
   ],
 }
 

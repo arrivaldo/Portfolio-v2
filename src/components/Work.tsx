@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { jobAnchor } from '../data'
 import { Rich, useLang } from '../i18n'
 import { gsap, hasFinePointer, prefersReducedMotion } from '../motion'
 import { SectionHead } from './SectionHead'
@@ -36,7 +37,7 @@ export function Work() {
 
       <ul className="work__list" data-reveal-rows=".work__row" onPointerEnter={() => setHovering(true)} onPointerLeave={() => setHovering(false)}>
         {t.jobs.map((job, i) => (
-          <li key={job.company} className={`work__row${i === active ? ' is-active' : ''}`} onPointerEnter={() => setActive(i)}>
+          <li key={job.company} id={jobAnchor(job.company)} className={`work__row${i === active ? ' is-active' : ''}`} onPointerEnter={() => setActive(i)}>
             <div className="work__period">
               {job.period}
               <small>{hash(job.company)}</small>

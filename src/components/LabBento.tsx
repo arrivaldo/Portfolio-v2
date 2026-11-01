@@ -1,9 +1,9 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type CSSProperties } from 'react'
 import { socials } from '../data'
-import { useLang } from '../i18n'
+import { Rich, useLang } from '../i18n'
 import { onIntro, quiet, useSpotlight } from '../motion'
 
-// "Beyond the code" bento: v1 globe, tech stack cube, local time, now, GitHub calendar and the chat shortcut.
+// "Beyond the code" bento: v1 globe, "what drives me" cube, local time, now, GitHub calendar and the chat shortcut.
 // Every class is prefixed `lab-` so nothing collides.
 
 const GH_USER = new URL(socials.find((s) => s.id === 'github')!.href).pathname.split('/')[1]
@@ -271,7 +271,7 @@ function SceneLoader({ done, label }: { done: boolean; label: string }) {
 }
 
 /**
- * The Lab bento: where I work from (v1 globe + my local time), what I am on right now, what I build with (stack
+ * The Lab bento: where I work from (v1 globe + my local time), what I am on right now, what drives me (the
  * cube), my GitHub graph and a door into the AI assistant. Six tiles, no empty cells at any width.
  */
 export function LabBento() {
@@ -280,7 +280,6 @@ export function LabBento() {
   const [ref, { seen, visible, near }] = useOnScreen<HTMLDivElement>()
   const stage = useWarmStage(near)
   useSpotlight('.lab-bento__tile', ref)
-  const tools = useMemo(() => new Set(t.roles.flatMap((r) => r.stack)).size, [t.roles])
   // Each press bumps the trigger; the cube plays a two-turn spin whenever it changes.
   const [spin, setSpin] = useState(0)
   // Each scene reports its first drawn frame; until then its tile shows a loader.
@@ -327,7 +326,7 @@ export function LabBento() {
         <div className="lab-bento__cap">
           <h3>{b.cubeTitle}</h3>
           <p>
-            <strong>{tools}</strong> {b.cubeText}
+            <Rich text={b.cubeText} />
           </p>
         </div>
       </article>
