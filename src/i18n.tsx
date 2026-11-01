@@ -7,7 +7,13 @@ type LangState = { lang: Lang; setLang: (l: Lang) => void; t: Content }
 
 const LangContext = createContext<LangState | null>(null)
 
+/** Each language has its own URL: "/" is English, "/es" Spanish (es/index.html carries the Spanish meta tags). */
+const isSpanishPath = () => /^\/es\/?$/.test(location.pathname)
+const pathFor = (lang: Lang) => (lang === 'es' ? '/es' : '/')
+
 function getInitialLang(): Lang {
+  // index.html already moved a Spanish visitor from "/" to "/es", so the URL is the answer; the rest is a fallback.
+  if (isSpanishPath()) return 'es'
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved === 'en' || saved === 'es') return saved
@@ -25,6 +31,11 @@ export function LangProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = lang
     document.title = t.meta.title
     document.querySelector('meta[name="description"]')?.setAttribute('content', t.meta.description)
+    // Keep the address bar and canonical URL on this language's page, so a shared link opens in the same language.
+    const path = pathFor(lang)
+    if ((location.pathname.replace(/\/+$/, '') || '/') !== path) history.replaceState(null, '', path + location.search + location.hash)
+    const canonical = document.querySelector<HTMLLinkElement>('link[rel="canonical"]')
+    if (canonical) canonical.href = new URL(path, canonical.href).href
     try {
       localStorage.setItem(STORAGE_KEY, lang)
     } catch {

@@ -15,7 +15,7 @@ const MAX_MS = 6000 // never hold the page hostage on a slow image
 /**
  * Intro (blueprint, chosen 2026-10-17 over caret / slice / spotlight / assemble / orbit / roles / echo / magnet /
  * sundial / tag; before that also split / fill / slot / cards / blur / stack / iris / wave): "Engineer" drawn like a
- * technical drawing — faint grid, guides, dimension lines that measure the word and crop marks — with the full name
+ * technical drawing — faint grid, guides, dimension lines around the word and crop marks — with the full name
  * beneath it and "(Loading) 0%" in the corners. The drawing fills with real progress; when ready it fades, the name
  * drops away and the word flies onto the hero's "Engineer" while the panel fades around it.
  */
@@ -46,10 +46,6 @@ export function Preloader({ onDone }: { onDone: () => void }) {
       const el = q('.mono__word')[0]
       const box = q('.mono__box')[0]
       const bg = q('.mono__bg')[0]
-
-      // The dimension lines quote the word's real size.
-      q('.bp__dim--w b')[0].textContent = `${Math.round(el.offsetWidth)} px`
-      q('.bp__dim--h b')[0].textContent = `${Math.round(el.offsetHeight)} px`
 
       // Entrance: the word fades in, crop marks snap on, then the name and the corners rise.
       gsap
@@ -150,12 +146,8 @@ export function Preloader({ onDone }: { onDone: () => void }) {
           <div className="mono__word">{word}</div>
           <span className="bp bp__guide bp__guide--top" />
           <span className="bp bp__guide bp__guide--base" />
-          <span className="bp bp__dim bp__dim--w">
-            <b />
-          </span>
-          <span className="bp bp__dim bp__dim--h">
-            <b />
-          </span>
+          <span className="bp bp__dim bp__dim--w" />
+          <span className="bp bp__dim bp__dim--h" />
           {['tl', 'tr', 'bl', 'br'].map((c) => (
             <span key={c} className={`bp bp__mark bp__mark--${c}`} />
           ))}

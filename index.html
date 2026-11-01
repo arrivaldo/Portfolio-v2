@@ -7,9 +7,17 @@
         if (t !== "dark" && t !== "light") t = matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
         document.documentElement.dataset.theme = t;
         document.documentElement.classList.add("is-loading");
-        // Same rule as i18n.tsx (saved choice, else browser language), applied before React loads.
-        var l = localStorage.getItem("lang");
-        if (l !== "en" && l !== "es") l = navigator.language.toLowerCase().indexOf("es") === 0 ? "es" : "en";
+        // Same rule as i18n.tsx, applied before React loads: the URL decides (/es is Spanish); on "/" a saved choice or a
+        // Spanish browser moves the visitor to /es without a reload, so every language keeps one shareable URL.
+        var l = "en";
+        if (/^\/es\/?$/.test(location.pathname)) l = "es";
+        else {
+          var saved = localStorage.getItem("lang");
+          if (saved === "es" || (saved !== "en" && navigator.language.toLowerCase().indexOf("es") === 0)) {
+            l = "es";
+            history.replaceState(null, "", "/es" + location.search + location.hash);
+          }
+        }
         document.documentElement.lang = l;
       } catch (e) {}
     </script>
@@ -20,6 +28,10 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="theme-color" content="#0d0d0d" />
     <link rel="canonical" href="https://engineerick-portfolio.vercel.app/" />
+    <!-- One URL per language, so search engines index both (es/index.html is written at build time, vite.config.ts). -->
+    <link rel="alternate" hreflang="en" href="https://engineerick-portfolio.vercel.app/" />
+    <link rel="alternate" hreflang="es" href="https://engineerick-portfolio.vercel.app/es" />
+    <link rel="alternate" hreflang="x-default" href="https://engineerick-portfolio.vercel.app/" />
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",

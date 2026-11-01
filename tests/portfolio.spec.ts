@@ -25,8 +25,22 @@ test.describe('portfolio', () => {
     if (isMobile) await page.getByRole('button', { name: 'Open menu' }).click()
     await page.getByRole('button', { name: 'Es', exact: true }).click()
     await expect(page.locator('html')).toHaveAttribute('lang', 'es')
+    await expect(page).toHaveURL(/\/es$/)
     if (isMobile) await expect(page.locator('#mobile-menu nav')).toContainText('Proyectos')
     else await expect(page.locator('.nav')).toContainText('Proyectos')
+  })
+
+  test('/es opens in Spanish even when English was the last choice', async ({ page }) => {
+    await open(page, 'en', '/es')
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es')
+    await expect(page).toHaveURL(/\/es$/)
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', /\/es$/)
+  })
+
+  test('a saved Spanish choice moves "/" to /es', async ({ page }) => {
+    await open(page, 'es')
+    await expect(page).toHaveURL(/\/es$/)
+    await expect(page.locator('html')).toHaveAttribute('lang', 'es')
   })
 
   test('toggles the theme', async ({ page }) => {

@@ -392,7 +392,7 @@ const en: Content = {
   stats: [
     { value: 9, suffix: '+', label: 'Years of experience' },
     { value: 22, suffix: '+', label: 'Professional projects' },
-    { value: 25, suffix: '+', label: 'Clients' },
+    { value: 32, suffix: '+', label: 'Clients' },
     { value: 16, suffix: '', label: 'Engineers trained and led' },
   ],
   projects: [
@@ -651,7 +651,7 @@ const es: Content = {
   stats: [
     { value: 9, suffix: '+', label: 'Años de experiencia' },
     { value: 22, suffix: '+', label: 'Proyectos profesionales' },
-    { value: 25, suffix: '+', label: 'Clientes' },
+    { value: 32, suffix: '+', label: 'Clientes' },
     { value: 16, suffix: '', label: 'Ingenieros formados y liderados' },
   ],
   projects: [

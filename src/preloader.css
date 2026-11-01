@@ -102,17 +102,6 @@
 .bp__dim--h { top: 0.12em; bottom: 0.12em; left: -0.32em; width: 9px; }
 .bp__dim--h::before { top: 0; bottom: 0; left: 4px; width: 1px; background: var(--text); transform: scaleY(var(--p)); }
 .bp__dim--h::after { inset: 0; border-block: 1px solid var(--text); opacity: calc(var(--p) * 1.4 - 0.4); }
-.bp__dim b {
-  position: relative;
-  padding: 0 8px;
-  background: var(--frame);
-  font: 500 11px/1 var(--mono);
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-  white-space: nowrap;
-  opacity: calc(var(--p) * 2 - 0.3);
-}
-.bp__dim--h b { transform: rotate(-90deg); }
 .bp__mark { position: absolute; width: 14px; height: 14px; border: 0 solid var(--text); }
 .bp__mark--tl { left: -0.16em; top: -0.04em; border-width: 1px 0 0 1px; }
 .bp__mark--tr { right: -0.16em; top: -0.04em; border-width: 1px 1px 0 0; }
